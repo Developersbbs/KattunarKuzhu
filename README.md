@@ -1,36 +1,99 @@
-# Welcome to your Expo app 👋
+# Kattunar Kuzhu App
 
-This is an [Expo](https://expo.dev) project created with [`create-gluestack-app`](https://www.npmjs.com/package/create-gluestack).
+A cross-platform mobile application built with Expo, React Native, and GlueStack UI.
+
+## Features
+
+- Cross-platform compatibility (iOS, Android, Web)
+- Modern UI with GlueStack UI components
+- Custom theme with adaptive dark/light mode
+- Tab-based navigation with Expo Router
+- CI/CD with GitHub Actions
 
 ## Get started
 
-1. Start the app
+1. Install dependencies
 
    ```bash
-    npm run start
+   npm install
    ```
 
-In the output, you'll find options to open the app in a
+2. Start the app
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+   ```bash
+   npm run start
+   ```
+
+In the output, you'll find options to open the app in a:
+
+- [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Web browser](https://docs.expo.dev/workflow/web/)
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Build
+
+### Local Build
+
+To build the app locally:
+
+#### Android
+
+```bash
+# Debug build
+cd android && ./gradlew assembleDebug
+
+# Release build
+cd android && ./gradlew assembleRelease
+```
+
+#### iOS
+
+```bash
+cd ios && pod install
+npx react-native run-ios --configuration Release
+```
+
+#### Web
+
+```bash
+npm run web:build
+```
+
+### CI/CD with GitHub Actions
+
+This project includes a GitHub Actions workflow for automated builds:
+
+- **Triggers**: Push to main branch, pull requests, or manual trigger
+- **Builds**: Debug APK, Release APK, and AAB files
+- **Artifacts**: Available for download from workflow runs
+- **Releases**: Automatically created on push to main branch
+
+For more information, see the [CI/CD documentation](.github/README.md).
+
+## Technology Stack
+
+- **Core**: Expo SDK 52, React Native 0.76.6, React 18.3.1
+- **UI**: GlueStack UI, TailwindCSS/NativeWind
+- **Navigation**: Expo Router, React Navigation
+- **Theme**: Custom theme with adaptive dark/light mode
+
 ## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
+To learn more about the technologies used in this project:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-- [Nativewind](https://www.nativewind.dev/): Nativewind is a utility-first library for building native apps with Tailwind CSS.
-- [Gluestack](https://gluestack.io/): Gluestack is a component library for building native apps with Tailwind CSS.
+- [Expo documentation](https://docs.expo.dev/)
+- [React Native documentation](https://reactnative.dev/docs/getting-started)
+- [GlueStack UI](https://gluestack.io/)
+- [NativeWind](https://www.nativewind.dev/)
+- [Expo Router](https://docs.expo.dev/router/introduction/)
 
-## Join the community
+## Contributing
 
-Join our community of developers creating universal apps.
-
-- [gluestack-ui on GitHub](https://github.com/gluestack/gluestack-ui): View our open source ui library and contribute.
-- [gluestack community](https://discord.com/channels/1050761204852858900/1336392784168484914): Chat with gluestack users and ask questions.
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add some amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a pull request

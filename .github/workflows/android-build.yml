@@ -2,7 +2,9 @@ name: Android Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 env:
@@ -10,6 +12,7 @@ env:
   ANDROID_BUILD_TOOLS: '34.0.0'
   ANDROID_SDK_TOOLS: '11076708'
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.jvmargs="-Xmx4g -XX:+HeapDumpOnOutOfMemoryError"
+  NODE_ENV: 'production'
 
 permissions:
   contents: write
@@ -56,38 +59,63 @@ jobs:
       run: |
         echo 'y' | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' 'ndk;25.1.8937393'
 
-    - name: Set up Android environment
+    - name: Create .env file
       run: |
-        echo "${{ secrets.KEYSTORE_PROPERTIES }}" > android/keystore.properties
-        echo "${{ secrets.KEYSTORE }}" | base64 -d > android/app/upload-keystore.jks
-        echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > android/app/google-services.json
+        echo "NODE_ENV=production" > .env
+        echo "API_URL=${{ secrets.API_URL || 'https://api.example.com' }}" >> .env
+        echo "DARK_MODE=media" >> .env
 
-    - name: Build APK
+    - name: Set up debug keystore for signing
+      run: |
+        mkdir -p android/app/
+        echo "${{ secrets.DEBUG_KEYSTORE || 'keystore_not_set' }}" | base64 -d > android/app/debug.keystore || true
+        if [ ! -f "android/app/debug.keystore" ] || [ ! -s "android/app/debug.keystore" ]; then
+          echo "Debug keystore not provided or invalid, generating a new one..."
+          cd android/app
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          cd ../..
+        fi
+
+    - name: Build Debug APK
       run: |
         cd android
-        ./gradlew assembleRelease --no-daemon --stacktrace
+        chmod +x ./gradlew
+        ./gradlew assembleDebug --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a
 
-    - name: Build AAB
+    - name: Build Release APK with Debug Signing
       run: |
         cd android
-        ./gradlew bundleRelease --no-daemon --stacktrace
+        ./gradlew assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a
 
-    - name: Upload APK
+    - name: Build AAB with Debug Signing
+      run: |
+        cd android
+        ./gradlew bundleRelease --no-daemon --stacktrace -PreactNativeArchitectures=arm64-v8a
+
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 7
+
+    - name: Upload Release APK
       uses: actions/upload-artifact@v4
       with:
         name: app-release
         path: |
-          android/app/build/outputs/apk/release/app-release.apk
+          android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
           android/app/build/outputs/bundle/release/app-release.aab
         retention-days: 7
 
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v2
-      if: success() 
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       with:
         files: |
-          android/app/build/outputs/apk/release/app-release.apk
+          android/app/build/outputs/apk/debug/app-debug.apk
+          android/app/build/outputs/apk/release/app-arm64-v8a-release.apk
           android/app/build/outputs/bundle/release/app-release.aab
         generate_release_notes: true
         tag_name: v${{ github.run_number }}
@@ -95,4 +123,4 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || secrets.PAT }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

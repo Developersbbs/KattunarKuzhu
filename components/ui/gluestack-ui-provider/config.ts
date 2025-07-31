@@ -1,34 +1,87 @@
 'use client';
 import { vars } from 'nativewind';
 
+// Helper function to convert hex to RGB string
+const hexToRgb = (hex: string) => {
+  // Remove the # if it exists
+  hex = hex.replace('#', '');
+  
+  // Parse the hex values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // Return the RGB string
+  return `${r} ${g} ${b}`;
+};
+
+// New color palette
+const PRIMARY = '#2D1248'; // Dark purple
+const SECONDARY = '#E1E4DD'; // Light gray with slight green tint
+
+// RGB conversions
+const PRIMARY_RGB = hexToRgb(PRIMARY);
+const SECONDARY_RGB = hexToRgb(SECONDARY);
+
+// Generate color variations
+const generateShades = (baseRgb: string, isLight: boolean) => {
+  const [r, g, b] = baseRgb.split(' ').map(Number);
+  
+  // For dark colors (like PRIMARY), we lighten for variations
+  // For light colors (like SECONDARY), we darken for variations
+  const factor = isLight ? -1 : 1;
+  
+  return {
+    '0': `${Math.min(255, r + factor * 90)} ${Math.min(255, g + factor * 90)} ${Math.min(255, b + factor * 90)}`,
+    '50': `${Math.min(255, r + factor * 80)} ${Math.min(255, g + factor * 80)} ${Math.min(255, b + factor * 80)}`,
+    '100': `${Math.min(255, r + factor * 70)} ${Math.min(255, g + factor * 70)} ${Math.min(255, b + factor * 70)}`,
+    '200': `${Math.min(255, r + factor * 60)} ${Math.min(255, g + factor * 60)} ${Math.min(255, b + factor * 60)}`,
+    '300': `${Math.min(255, r + factor * 50)} ${Math.min(255, g + factor * 50)} ${Math.min(255, b + factor * 50)}`,
+    '400': `${Math.min(255, r + factor * 30)} ${Math.min(255, g + factor * 30)} ${Math.min(255, b + factor * 30)}`,
+    '500': `${r} ${g} ${b}`, // Original color
+    '600': `${Math.max(0, r - factor * 20)} ${Math.max(0, g - factor * 20)} ${Math.max(0, b - factor * 20)}`,
+    '700': `${Math.max(0, r - factor * 40)} ${Math.max(0, g - factor * 40)} ${Math.max(0, b - factor * 40)}`,
+    '800': `${Math.max(0, r - factor * 60)} ${Math.max(0, g - factor * 60)} ${Math.max(0, b - factor * 60)}`,
+    '900': `${Math.max(0, r - factor * 80)} ${Math.max(0, g - factor * 80)} ${Math.max(0, b - factor * 80)}`,
+    '950': `${Math.max(0, r - factor * 90)} ${Math.max(0, g - factor * 90)} ${Math.max(0, b - factor * 90)}`,
+  };
+};
+
+// Generate primary shades (dark purple)
+const primaryShades = generateShades(PRIMARY_RGB, false);
+
+// Generate secondary shades (light gray)
+const secondaryShades = generateShades(SECONDARY_RGB, true);
+
 export const config = {
   light: vars({
-    '--color-primary-0': '179 179 179',
-    '--color-primary-50': '153 153 153',
-    '--color-primary-100': '128 128 128',
-    '--color-primary-200': '115 115 115',
-    '--color-primary-300': '102 102 102',
-    '--color-primary-400': '82 82 82',
-    '--color-primary-500': '51 51 51',
-    '--color-primary-600': '41 41 41',
-    '--color-primary-700': '31 31 31',
-    '--color-primary-800': '13 13 13',
-    '--color-primary-900': '10 10 10',
-    '--color-primary-950': '8 8 8',
+    // Primary (Dark purple) - Adjusted for light theme
+    '--color-primary-0': primaryShades['0'],
+    '--color-primary-50': primaryShades['50'],
+    '--color-primary-100': primaryShades['100'],
+    '--color-primary-200': primaryShades['200'],
+    '--color-primary-300': primaryShades['300'],
+    '--color-primary-400': primaryShades['400'],
+    '--color-primary-500': primaryShades['500'],
+    '--color-primary-600': primaryShades['600'],
+    '--color-primary-700': primaryShades['700'],
+    '--color-primary-800': primaryShades['800'],
+    '--color-primary-900': primaryShades['900'],
+    '--color-primary-950': primaryShades['950'],
 
-    /* Secondary  */
-    '--color-secondary-0': '253 253 253',
-    '--color-secondary-50': '251 251 251',
-    '--color-secondary-100': '246 246 246',
-    '--color-secondary-200': '242 242 242',
-    '--color-secondary-300': '237 237 237',
-    '--color-secondary-400': '230 230 231',
-    '--color-secondary-500': '217 217 219',
-    '--color-secondary-600': '198 199 199',
-    '--color-secondary-700': '189 189 189',
-    '--color-secondary-800': '177 177 177',
-    '--color-secondary-900': '165 164 164',
-    '--color-secondary-950': '157 157 157',
+    /* Secondary (Light gray with green tint) - Adjusted for light theme */
+    '--color-secondary-0': secondaryShades['0'],
+    '--color-secondary-50': secondaryShades['50'],
+    '--color-secondary-100': secondaryShades['100'],
+    '--color-secondary-200': secondaryShades['200'],
+    '--color-secondary-300': secondaryShades['300'],
+    '--color-secondary-400': secondaryShades['400'],
+    '--color-secondary-500': secondaryShades['500'],
+    '--color-secondary-600': secondaryShades['600'],
+    '--color-secondary-700': secondaryShades['700'],
+    '--color-secondary-800': secondaryShades['800'],
+    '--color-secondary-900': secondaryShades['900'],
+    '--color-secondary-950': secondaryShades['950'],
 
     /* Tertiary */
     '--color-tertiary-0': '255 250 245',
@@ -111,8 +164,11 @@ export const config = {
     '--color-typography-600': '115 115 115',
     '--color-typography-700': '82 82 82',
     '--color-typography-800': '64 64 64',
-    '--color-typography-900': '38 38 39',
-    '--color-typography-950': '23 23 23',
+    '--color-typography-900': PRIMARY_RGB, // Using primary color for dark text
+    '--color-typography-950': PRIMARY_RGB,
+    '--color-typography-white': SECONDARY_RGB, // Using secondary color for light text
+    '--color-typography-gray': '212 212 212',
+    '--color-typography-black': PRIMARY_RGB,
 
     /* Outline */
     '--color-outline-0': '253 254 254',
@@ -123,24 +179,24 @@ export const config = {
     '--color-outline-400': '165 163 163',
     '--color-outline-500': '140 141 141',
     '--color-outline-600': '115 116 116',
-    '--color-outline-700': '83 82 82',
-    '--color-outline-800': '65 65 65',
-    '--color-outline-900': '39 38 36',
-    '--color-outline-950': '26 23 23',
+    '--color-outline-700': SECONDARY_RGB, // Using secondary color for outlines
+    '--color-outline-800': primaryShades['300'],
+    '--color-outline-900': PRIMARY_RGB,
+    '--color-outline-950': primaryShades['800'],
 
     /* Background */
-    '--color-background-0': '255 255 255',
-    '--color-background-50': '246 246 246',
-    '--color-background-100': '242 241 241',
-    '--color-background-200': '220 219 219',
-    '--color-background-300': '213 212 212',
-    '--color-background-400': '162 163 163',
-    '--color-background-500': '142 142 142',
-    '--color-background-600': '116 116 116',
-    '--color-background-700': '83 82 82',
-    '--color-background-800': '65 64 64',
-    '--color-background-900': '39 38 37',
-    '--color-background-950': '18 18 18',
+    '--color-background-0': SECONDARY_RGB, // Light background
+    '--color-background-50': secondaryShades['50'],
+    '--color-background-100': secondaryShades['100'],
+    '--color-background-200': secondaryShades['200'],
+    '--color-background-300': secondaryShades['300'],
+    '--color-background-400': secondaryShades['400'],
+    '--color-background-500': secondaryShades['500'],
+    '--color-background-600': secondaryShades['600'],
+    '--color-background-700': secondaryShades['700'],
+    '--color-background-800': secondaryShades['800'],
+    '--color-background-900': primaryShades['300'],
+    '--color-background-950': PRIMARY_RGB, // Dark background (primary color)
 
     /* Background Special */
     '--color-background-error': '254 241 241',
@@ -148,39 +204,42 @@ export const config = {
     '--color-background-success': '237 252 242',
     '--color-background-muted': '247 248 247',
     '--color-background-info': '235 248 254',
+    '--color-background-light': SECONDARY_RGB,
+    '--color-background-dark': PRIMARY_RGB,
 
     /* Focus Ring Indicator  */
-    '--color-indicator-primary': '55 55 55',
+    '--color-indicator-primary': PRIMARY_RGB,
     '--color-indicator-info': '83 153 236',
     '--color-indicator-error': '185 28 28',
   }),
   dark: vars({
-    '--color-primary-0': '166 166 166',
-    '--color-primary-50': '175 175 175',
-    '--color-primary-100': '186 186 186',
-    '--color-primary-200': '197 197 197',
-    '--color-primary-300': '212 212 212',
-    '--color-primary-400': '221 221 221',
-    '--color-primary-500': '230 230 230',
-    '--color-primary-600': '240 240 240',
-    '--color-primary-700': '250 250 250',
-    '--color-primary-800': '253 253 253',
-    '--color-primary-900': '254 249 249',
-    '--color-primary-950': '253 252 252',
+    // Primary (Dark purple) - Maintained for dark theme
+    '--color-primary-0': primaryShades['950'],
+    '--color-primary-50': primaryShades['900'],
+    '--color-primary-100': primaryShades['800'],
+    '--color-primary-200': primaryShades['700'],
+    '--color-primary-300': primaryShades['600'],
+    '--color-primary-400': primaryShades['500'],
+    '--color-primary-500': primaryShades['400'],
+    '--color-primary-600': primaryShades['300'],
+    '--color-primary-700': primaryShades['200'],
+    '--color-primary-800': primaryShades['100'],
+    '--color-primary-900': primaryShades['50'],
+    '--color-primary-950': primaryShades['0'],
 
-    /* Secondary  */
-    '--color-secondary-0': '20 20 20',
-    '--color-secondary-50': '23 23 23',
-    '--color-secondary-100': '31 31 31',
-    '--color-secondary-200': '39 39 39',
-    '--color-secondary-300': '44 44 44',
-    '--color-secondary-400': '56 57 57',
-    '--color-secondary-500': '63 64 64',
-    '--color-secondary-600': '86 86 86',
-    '--color-secondary-700': '110 110 110',
-    '--color-secondary-800': '135 135 135',
-    '--color-secondary-900': '150 150 150',
-    '--color-secondary-950': '164 164 164',
+    /* Secondary (Light gray with green tint) - Maintained for dark theme */
+    '--color-secondary-0': secondaryShades['950'],
+    '--color-secondary-50': secondaryShades['900'],
+    '--color-secondary-100': secondaryShades['800'],
+    '--color-secondary-200': secondaryShades['700'],
+    '--color-secondary-300': secondaryShades['600'],
+    '--color-secondary-400': secondaryShades['500'],
+    '--color-secondary-500': secondaryShades['400'],
+    '--color-secondary-600': secondaryShades['300'],
+    '--color-secondary-700': secondaryShades['200'],
+    '--color-secondary-800': secondaryShades['100'],
+    '--color-secondary-900': secondaryShades['50'],
+    '--color-secondary-950': secondaryShades['0'],
 
     /* Tertiary */
     '--color-tertiary-0': '84 49 18',
@@ -253,56 +312,61 @@ export const config = {
     '--color-info-950': '236 248 254',
 
     /* Typography */
-    '--color-typography-0': '23 23 23',
-    '--color-typography-50': '38 38 39',
-    '--color-typography-100': '64 64 64',
-    '--color-typography-200': '82 82 82',
-    '--color-typography-300': '115 115 115',
-    '--color-typography-400': '140 140 140',
-    '--color-typography-500': '163 163 163',
-    '--color-typography-600': '212 212 212',
-    '--color-typography-700': '219 219 220',
-    '--color-typography-800': '229 229 229',
-    '--color-typography-900': '245 245 245',
-    '--color-typography-950': '254 254 255',
+    '--color-typography-0': primaryShades['950'],
+    '--color-typography-50': primaryShades['900'],
+    '--color-typography-100': primaryShades['800'],
+    '--color-typography-200': primaryShades['700'],
+    '--color-typography-300': primaryShades['600'],
+    '--color-typography-400': primaryShades['500'],
+    '--color-typography-500': primaryShades['400'],
+    '--color-typography-600': secondaryShades['700'],
+    '--color-typography-700': secondaryShades['600'],
+    '--color-typography-800': secondaryShades['400'],
+    '--color-typography-900': secondaryShades['200'],
+    '--color-typography-950': SECONDARY_RGB, // Light text using secondary color
+    '--color-typography-white': SECONDARY_RGB, // Light text using secondary color
+    '--color-typography-gray': secondaryShades['400'],
+    '--color-typography-black': PRIMARY_RGB, // Dark text using primary color
 
     /* Outline */
-    '--color-outline-0': '26 23 23',
-    '--color-outline-50': '39 38 36',
-    '--color-outline-100': '65 65 65',
-    '--color-outline-200': '83 82 82',
-    '--color-outline-300': '115 116 116',
-    '--color-outline-400': '140 141 141',
-    '--color-outline-500': '165 163 163',
-    '--color-outline-600': '211 211 211',
-    '--color-outline-700': '221 220 219',
-    '--color-outline-800': '230 230 230',
-    '--color-outline-900': '243 243 243',
-    '--color-outline-950': '253 254 254',
+    '--color-outline-0': primaryShades['950'],
+    '--color-outline-50': primaryShades['900'],
+    '--color-outline-100': primaryShades['800'],
+    '--color-outline-200': primaryShades['700'],
+    '--color-outline-300': primaryShades['600'],
+    '--color-outline-400': primaryShades['500'],
+    '--color-outline-500': primaryShades['400'],
+    '--color-outline-600': secondaryShades['800'],
+    '--color-outline-700': secondaryShades['700'], // Highlight outline in dark mode
+    '--color-outline-800': secondaryShades['600'],
+    '--color-outline-900': secondaryShades['400'],
+    '--color-outline-950': SECONDARY_RGB,
 
     /* Background */
-    '--color-background-0': '18 18 18',
-    '--color-background-50': '39 38 37',
-    '--color-background-100': '65 64 64',
-    '--color-background-200': '83 82 82',
-    '--color-background-300': '116 116 116',
-    '--color-background-400': '142 142 142',
-    '--color-background-500': '162 163 163',
-    '--color-background-600': '213 212 212',
-    '--color-background-700': '229 228 228',
-    '--color-background-800': '242 241 241',
-    '--color-background-900': '246 246 246',
-    '--color-background-950': '255 255 255',
+    '--color-background-0': PRIMARY_RGB, // Dark background using primary color
+    '--color-background-50': primaryShades['700'],
+    '--color-background-100': primaryShades['600'],
+    '--color-background-200': primaryShades['500'],
+    '--color-background-300': primaryShades['400'],
+    '--color-background-400': primaryShades['300'],
+    '--color-background-500': primaryShades['200'],
+    '--color-background-600': secondaryShades['900'],
+    '--color-background-700': secondaryShades['800'],
+    '--color-background-800': secondaryShades['600'],
+    '--color-background-900': secondaryShades['400'],
+    '--color-background-950': SECONDARY_RGB, // Light background using secondary color
 
     /* Background Special */
     '--color-background-error': '66 43 43',
     '--color-background-warning': '65 47 35',
     '--color-background-success': '28 43 33',
-    '--color-background-muted': '51 51 51',
+    '--color-background-muted': primaryShades['400'],
     '--color-background-info': '26 40 46',
+    '--color-background-light': SECONDARY_RGB,
+    '--color-background-dark': PRIMARY_RGB,
 
     /* Focus Ring Indicator  */
-    '--color-indicator-primary': '247 247 247',
+    '--color-indicator-primary': SECONDARY_RGB,
     '--color-indicator-info': '161 199 245',
     '--color-indicator-error': '232 70 69',
   }),

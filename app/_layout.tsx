@@ -9,7 +9,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useColorScheme } from "@/components/useColorScheme";
-import { Slot } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
+import { getItem } from "expo-secure-store";
 
 import "../global.css";
 
@@ -20,7 +21,7 @@ export {
 
 // Define the initial route to be the custom home screen
 export const unstable_settings = {
-  initialRouteName: "index",
+  initialRouteName: "(main)",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -49,6 +50,37 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(null);
+  const router = useRouter();
+  const segments = useSegments();
+
+  useEffect(() => {
+    const checkFirstTime = async () => {
+      const firstTime = await getItem("isFirstTime");
+      if (firstTime === "false") {
+        setIsFirstTime(false);
+      } else {
+        setIsFirstTime(true);
+      }
+    };
+    checkFirstTime();
+  }, []);
+
+  useEffect(() => {
+    if (isFirstTime === null) {
+      return;
+    }
+
+    if (!isFirstTime) {
+      router.replace("/");
+    } else if (isFirstTime) {
+      router.replace("/onboarding");
+    }
+  }, [isFirstTime]);
+
+  if (isFirstTime === null) {
+    return <></>;
+  }
 
   return (
     <GluestackUIProvider mode={colorScheme === "dark" ? "dark" : "light"}>

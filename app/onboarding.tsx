@@ -50,7 +50,7 @@ export default function OnboardingScreen() {
         slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
       }
     } else {
-      router.replace('/');
+      router.replace('/login');
     }
   };
 

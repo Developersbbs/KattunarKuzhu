@@ -21,7 +21,7 @@ A cross-platform mobile application built with Expo, React Native, and GlueStack
 2. Start the app
 
    ```bash
-   npm run start
+    npm run start
    ```
 
 In the output, you'll find options to open the app in a:

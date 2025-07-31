@@ -1,6 +1,6 @@
 {
   "name": "expo-app",
-  "main": "expo-router/entry",
+  "main": "App.js",
   "version": "0.0.1",
   "scripts": {
     "start": "expo start",

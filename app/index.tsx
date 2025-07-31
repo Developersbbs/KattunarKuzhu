@@ -5,9 +5,10 @@ import LightBulbPerson from "@/assets/Icons/LightbulbPerson";
 import Rocket from "@/assets/Icons/Rocket";
 import Logo from "@/assets/Icons/Logo";
 import { Box } from "@/components/ui/box";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Text } from "@/components/ui/text";
-
+import { Button } from "@/components/ui/button";
+import { ButtonText } from "@/components/ui/button";
 import { Link } from "expo-router";
 
 const FeatureCard = ({ iconSvg: IconSvg, name, desc }: any) => {
@@ -20,7 +21,7 @@ const FeatureCard = ({ iconSvg: IconSvg, name, desc }: any) => {
         <Text>
           <IconSvg />
         </Text>
-        <Text className="text-typography-white font-medium ml-2 text-xl">
+        <Text className="text-typography-50 font-medium ml-2 text-xl">
           {name}
         </Text>
       </Box>
@@ -38,8 +39,6 @@ export default function Home() {
       >
         <Box className="absolute h-[500px] w-[500px] lg:w-[700px] lg:h-[700px]">
           <Gradient />
-        </Box>
-        <Box className="flex flex-1 items-center my-16 mx-5 lg:my-24 lg:mx-32">
         </Box>
       </ScrollView>
     </Box>

@@ -6,13 +6,23 @@ module.exports = function(api) {
             jsxImportSource: "nativewind"
         }], "nativewind/babel"],
 
-        plugins: [["module-resolver", {
-            root: ["./"],
+        plugins: [
+            ["module-resolver", {
+                root: ["./"],
 
-            alias: {
-                "@": "./",
-                "tailwind.config": "./tailwind.config.js"
-            }
-        }]]
+                alias: {
+                    "@": "./",
+                    "tailwind.config": "./tailwind.config.js"
+                }
+            }],
+            ["module:react-native-dotenv", {
+                moduleName: "@env",
+                path: ".env",
+                blacklist: null,
+                whitelist: null,
+                safe: false,
+                allowUndefined: true
+            }]
+        ]
     };
 };

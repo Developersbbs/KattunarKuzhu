@@ -1,0 +1,55 @@
+# Project Intelligence: Kattunar Kuzhu App
+
+## Development Patterns
+
+### Component Patterns
+- UI components are organized in the `components/ui/` directory with individual component folders
+- Each component may have platform-specific variants (.web.tsx) for optimal performance
+- Custom icons are stored in `assets/Icons/` as React components
+- Use GlueStack UI components as base UI elements wherever possible
+
+### Styling Patterns
+- Use TailwindCSS classes via NativeWind for styling
+- Follow utility-first approach with className props
+- Use platform-specific styles when needed with separate web files
+- Maintain theme consistency with the predefined color palette in tailwind.config.js
+
+### Navigation Patterns
+- Use Expo Router for file-based navigation
+- Keep all screen components in the app/ directory
+- Organize tabs under app/tabs/(tabs)/ directory
+- Modal screens are placed in the app/ directory directly
+
+### File Naming Conventions
+- Use PascalCase for component files (e.g., `FeatureCard.tsx`)
+- Use camelCase for utility files and hooks (e.g., `useColorScheme.ts`)
+- Use kebab-case for configuration files (e.g., `tailwind.config.js`)
+- Use platform-specific extensions for platform variations (e.g., `.web.ts`)
+
+## Tool Usage Patterns
+
+### Running the App
+- Use `npm start` to start the Expo development server
+- Use `npm run ios` for iOS development
+- Use `npm run android` for Android development
+- Use `npm run web` for web development
+
+### Environment Variables
+- The `DARK_MODE=media` environment variable is used to control theme based on system preferences
+
+## Critical Implementation Notes
+
+### Theme System
+- The app uses a theme system based on GlueStack UI provider and useColorScheme hook
+- Theme switching happens automatically based on system preferences
+- Theme values are applied through TailwindCSS classes
+
+### Responsive Design
+- Use responsive utilities from TailwindCSS (e.g., md:flex-1)
+- Use dimension-specific styles for different screen sizes
+- Implement platform-specific adjustments when needed
+
+### Performance Considerations
+- Use platform-specific optimizations when necessary
+- Consider implementing lazy loading for performance-heavy components
+- Utilize React Native's built-in performance features like useMemo and useCallback 

@@ -158,6 +158,7 @@ const Login = () => {
         {/* Logo Section */}
         <Box className="flex-1 justify-center items-center pt-16 gap-6">
           <Image 
+            alt="logo"
             source={require("@/assets/images/logo.png")} 
             className="w-28 h-28 rounded-full"
             resizeMode="contain"

@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import BottomNavBar from "@/components/BottomNavBar";
@@ -8,6 +8,10 @@ import { View } from "react-native";
 export default function MainLayout() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
+  const pathname = usePathname();
+  
+  // Check if current screen is the home screen
+  const isHomeScreen = pathname === "/(main)" || pathname === "/(main)/";
 
   return (
     <View style={{ flex: 1 }}>
@@ -30,6 +34,7 @@ export default function MainLayout() {
           name="index"
           options={{
             title: "Home",
+            headerShown: false, // Hide header on home screen
           }}
         />
         <Stack.Screen

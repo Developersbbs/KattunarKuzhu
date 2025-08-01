@@ -48,7 +48,7 @@ const BottomNavBar = () => {
   const theme = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Check if the current path matches a nav item path
   const isActive = (path: string) => {
     if (path === "/(main)" && pathname === "/(main)") {
@@ -64,7 +64,7 @@ const BottomNavBar = () => {
         style={[
           styles.navBar,
           {
-            backgroundColor: colorScheme === "dark" ? theme.background : theme.tint,
+            backgroundColor: theme.tint,
             shadowColor: theme.text,
             shadowOffset: { width: 0, height: 2 },
             elevation: 0,
@@ -74,7 +74,7 @@ const BottomNavBar = () => {
         {navItems.map((item, index) => {
           const active = isActive(item.path);
           const IconComponent = item.icon;
-          
+
           return (
             <TouchableOpacity
               key={item.name}
@@ -82,24 +82,15 @@ const BottomNavBar = () => {
               onPress={() => router.push(item.path as any)}
               activeOpacity={0.7}
             >
-              <Box
-                style={[
-                  styles.iconContainer,
-                  active && {
-                    backgroundColor: theme.tint,
-                  },
-                ]}
-              >
-                <IconComponent
-                  size={22}
-                  color={
-                    active
-                      ? theme.text
-                      : theme.background
-                  }
-                  strokeWidth={active ? 2.5 : 2}
-                />
-              </Box>
+              <IconComponent
+                size={22}
+                color={
+                  active
+                    ? theme.text
+                    : theme.background
+                }
+                strokeWidth={active ? 2.5 : 2}
+              />
               <Text
                 className="text-xs mt-1"
                 style={{
@@ -122,7 +113,7 @@ const BottomNavBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 25,
+    bottom: 10,
     left: 0,
     right: 0,
     alignItems: "center",
@@ -140,6 +131,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
+    gap: 3,
   },
   iconContainer: {
     width: 42,

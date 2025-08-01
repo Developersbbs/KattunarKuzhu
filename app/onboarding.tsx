@@ -222,7 +222,6 @@ export default function OnboardingScreen() {
               ? (isTamil ? 'தொடங்குங்கள்' : 'Get Started') 
               : (isTamil ? 'அடுத்து' : 'Next')}
           </ButtonText>
-          <ChevronRight size={24} color={theme.background} style={{ marginLeft: 8 }} />
         </Button>
       </Box>
     </Box>

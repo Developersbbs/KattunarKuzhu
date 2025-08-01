@@ -129,7 +129,7 @@ const Login = () => {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      router.replace("/");
+      router.replace("/(main)");
     }, 1500);
   };
   
@@ -238,7 +238,7 @@ const Login = () => {
                             }}
                             value={`${countryCode.flag} ${countryCode.code}`}
                           />
-                          <SelectIcon as={ChevronDown} size={16} />
+                          <SelectIcon className="size-4" as={ChevronDown} />
                         </SelectTrigger>
                         <SelectPortal>
                           <SelectBackdrop />

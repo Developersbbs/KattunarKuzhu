@@ -406,7 +406,7 @@ export default function HomeScreen() {
                 }}
               >
                 <Box className="flex-row justify-between">
-                  <Box>
+        <Box>
                     <Box className="flex-row items-center gap-2">
                       <Box 
                         className="p-2 rounded-xl" 
@@ -461,7 +461,7 @@ export default function HomeScreen() {
             >
               {/* Chart Header */}
               <Box className="flex-row justify-between items-center mb-4">
-                <Box>
+          <Box>
                   <Text className="text-sm font-medium" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
                     Total Requirements
                   </Text>
@@ -635,8 +635,8 @@ export default function HomeScreen() {
                     }}
                   >
                     <Users size={16} color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
-                  </Box>
-                  <Box>
+          </Box>
+          <Box>
                     <Text className="font-medium" style={{ color: theme.text }}>Quick Actions</Text>
                     <Text className="text-sm" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>Manage referrals</Text>
                   </Box>
@@ -844,10 +844,10 @@ export default function HomeScreen() {
                   </Box>
                 </Box>
               </Box>
-            </Box>
           </Box>
-        </ScrollView>
-      </Box>
+        </Box>
+      </ScrollView>
+    </Box>
 
       {/* Notification Panel */}
       <NotificationPanel 

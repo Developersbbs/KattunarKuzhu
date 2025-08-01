@@ -6,6 +6,8 @@ import { Colors } from "@/constants/Colors";
 import { Calendar as CalendarIcon, Users, UserPlus, Clock, MapPin, CheckCircle, Calendar as CalendarComponent, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { TouchableOpacity, ScrollView, Dimensions, View } from "react-native";
 import MeetingCard, { Meeting, MeetingType, MeetingStatus } from "@/components/MeetingCard";
+import { useRouter } from "expo-router";
+import { Button, ButtonText } from "@/components/ui/button";
 
 const { width } = Dimensions.get("window");
 
@@ -129,6 +131,7 @@ export default function MeetingsScreen() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarDates, setCalendarDates] = useState<Date[]>([]);
   const [meetingsForSelectedDate, setMeetingsForSelectedDate] = useState<Meeting[]>([]);
+  const router = useRouter();
   
   // Generate calendar dates for current month view
   useEffect(() => {
@@ -230,6 +233,10 @@ export default function MeetingsScreen() {
   const handleMarkAttendance = (meetingId: string) => {
     console.log("Mark attendance for meeting:", meetingId);
     // Navigate to attendance marking screen
+    router.push({
+      pathname: "/(attendance)/mark-attendance",
+      params: { meetingId }
+    });
   };
 
   // Function to render the tab content based on active tab
@@ -501,24 +508,14 @@ export default function MeetingsScreen() {
     return (
       <Box className="flex-1 p-4">
         {/* Schedule Button */}
-        <Box className="items-center mb-6">
-          <TouchableOpacity
-            className="px-6 py-3 rounded-full"
-            style={{
-              backgroundColor: theme.tint,
-              width: width * 0.8,
-            }}
-            activeOpacity={0.8}
-            onPress={() => console.log("Schedule a One-on-One")}
-          >
-            <Text
-              className="text-base font-medium text-center"
-              style={{ color: "#FFFFFF" }}
-            >
-              Schedule a One-on-One
-            </Text>
-          </TouchableOpacity>
-        </Box>
+        <Button
+          className="mb-6 h-12 rounded-lg"
+          style={{ backgroundColor: theme.tint }}
+          onPress={() => router.push("/(one-on-one)/member-search")}
+        >
+          <UserPlus size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <ButtonText style={{ color: "#FFFFFF" }}>Schedule a One-on-One</ButtonText>
+        </Button>
         
         {/* Pending Requests Section */}
         <Box className="mb-6">

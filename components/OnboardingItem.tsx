@@ -21,7 +21,7 @@ const OnboardingItem = ({ item }: OnboardingItemProps) => {
 
   return (
     <Box style={{ width, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, backgroundColor: theme.background }}>
-      <Image source={item.image} style={{ width: width * 0.8, height: width * 0.8, marginBottom: 40 }} resizeMode="contain" />
+      <Image alt='onboarding-item' source={item.image} style={{ width: width * 0.8, height: width * 0.8, marginBottom: 40 }} resizeMode="contain" />
       <Text className="text-3xl font-bold text-center mb-4" style={{ color: theme.text }}>{item.title}</Text>
       <Text className="text-lg text-center" style={{ color: theme.text }}>{item.subtitle}</Text>
     </Box>

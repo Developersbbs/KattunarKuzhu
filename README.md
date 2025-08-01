@@ -1,99 +1,119 @@
 # Kattunar Kuzhu App
 
-A cross-platform mobile application built with Expo, React Native, and GlueStack UI.
+A business networking app built with Expo, React Native, and GlueStack UI.
 
 ## Features
 
-- Cross-platform compatibility (iOS, Android, Web)
-- Modern UI with GlueStack UI components
-- Custom theme with adaptive dark/light mode
-- Tab-based navigation with Expo Router
-- CI/CD with GitHub Actions
+- Multi-step onboarding with pagination and animations
+- Phone-based OTP login system with country code selection
+- Dark/Light theme support with system preference detection
+- File-based routing with Expo Router
+- Custom UI components built with GlueStack UI
+- Responsive design for various screen sizes
 
-## Get started
+## New Components
 
-1. Install dependencies
+### NotificationPanel
 
-   ```bash
-   npm install
-   ```
+A full-screen notification panel that slides in from the right side. The panel displays notifications grouped by date and supports different notification types with appropriate styling.
 
-2. Start the app
+#### Usage
 
-   ```bash
-    npm run start
-   ```
+```tsx
+import NotificationPanel from "@/components/NotificationPanel";
+import { useState } from "react";
 
-In the output, you'll find options to open the app in a:
+// Define notification types
+type NotificationType = 'info' | 'success' | 'warning' | 'meeting';
 
-- [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Web browser](https://docs.expo.dev/workflow/web/)
+// Define notification interface
+interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+function MyScreen() {
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  
+  // Sample notifications
+  const notifications: Notification[] = [
+    {
+      id: '1',
+      type: 'meeting',
+      title: 'Weekly Business Meet',
+      message: 'Your meeting starts in 30 minutes.',
+      time: 'Today 09:30 AM',
+      read: false,
+    },
+    // More notifications...
+  ];
 
-## Build
+  const handleNotificationPress = (notification: Notification) => {
+    console.log('Notification pressed:', notification);
+    setShowNotificationPanel(false);
+  };
 
-### Local Build
+  return (
+    <>
+      {/* Your screen content */}
+      <Button onPress={() => setShowNotificationPanel(true)}>
+        Show Notifications
+      </Button>
 
-To build the app locally:
-
-#### Android
-
-```bash
-# Debug build
-cd android && ./gradlew assembleDebug
-
-# Release build
-cd android && ./gradlew assembleRelease
+      {/* Notification Panel */}
+      <NotificationPanel 
+        isVisible={showNotificationPanel}
+        onClose={() => setShowNotificationPanel(false)}
+        notifications={notifications}
+        onNotificationPress={handleNotificationPress}
+        onClearAll={() => console.log('Clear all')}
+      />
+    </>
+  );
+}
 ```
 
-#### iOS
+#### Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| isVisible | boolean | Controls the visibility of the notification panel |
+| onClose | () => void | Function called when the panel is closed |
+| notifications | Notification[] | Array of notification objects to display |
+| onNotificationPress | (notification: Notification) => void | Optional callback when a notification is pressed |
+| onClearAll | () => void | Optional callback when "Clear All" is pressed |
+
+#### Notification Types
+
+The component supports four notification types, each with its own styling:
+
+- `info`: General information notifications (blue)
+- `success`: Success or completion notifications (green)
+- `warning`: Warning or alert notifications (orange/yellow)
+- `meeting`: Meeting-related notifications (purple, matches app theme)
+
+## Development
+
+### Running the App
 
 ```bash
-cd ios && pod install
-npx react-native run-ios --configuration Release
+# Start the development server
+npm start
+
+# Run on iOS
+npm run ios
+
+# Run on Android
+npm run android
+
+# Run on Web
+npm run web
 ```
 
-#### Web
+### Environment Variables
 
-```bash
-npm run web:build
-```
-
-### CI/CD with GitHub Actions
-
-This project includes a GitHub Actions workflow for automated builds:
-
-- **Triggers**: Push to main branch, pull requests, or manual trigger
-- **Builds**: Debug APK, Release APK, and AAB files
-- **Artifacts**: Available for download from workflow runs
-- **Releases**: Automatically created on push to main branch
-
-For more information, see the [CI/CD documentation](.github/README.md).
-
-## Technology Stack
-
-- **Core**: Expo SDK 52, React Native 0.76.6, React 18.3.1
-- **UI**: GlueStack UI, TailwindCSS/NativeWind
-- **Navigation**: Expo Router, React Navigation
-- **Theme**: Custom theme with adaptive dark/light mode
-
-## Learn more
-
-To learn more about the technologies used in this project:
-
-- [Expo documentation](https://docs.expo.dev/)
-- [React Native documentation](https://reactnative.dev/docs/getting-started)
-- [GlueStack UI](https://gluestack.io/)
-- [NativeWind](https://www.nativewind.dev/)
-- [Expo Router](https://docs.expo.dev/router/introduction/)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add some amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a pull request
+- `DARK_MODE=media` - Controls theme based on system preferences

@@ -9,6 +9,20 @@ import { Image } from "@/components/ui/image";
 import { Bell, Settings, Users, FileText, Calendar, Clock, X, Sun, Moon } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
+import NotificationPanel from "@/components/NotificationPanel";
+
+// Define the NotificationType
+type NotificationType = 'info' | 'success' | 'warning' | 'meeting';
+
+// Define the Notification type
+interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
 
 const { width } = Dimensions.get("window");
 
@@ -20,7 +34,52 @@ export default function HomeScreen() {
   const [showMeetingAlert, setShowMeetingAlert] = useState(true);
   const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   
+  // Sample notifications data
+  const sampleNotifications: Notification[] = [
+    {
+      id: '1',
+      type: 'meeting',
+      title: 'Weekly Business Meet',
+      message: 'Your meeting starts in 30 minutes. Don\'t forget to prepare your presentation.',
+      time: 'Today 09:30 AM',
+      read: false,
+    },
+    {
+      id: '2',
+      type: 'success',
+      title: 'Referral Accepted',
+      message: 'John Smith has accepted your business referral for IT services.',
+      time: 'Today 08:15 AM',
+      read: false,
+    },
+    {
+      id: '3',
+      type: 'info',
+      title: 'New Connection Request',
+      message: 'You have a new connection request from Sarah Williams.',
+      time: 'Yesterday 03:45 PM',
+      read: true,
+    },
+    {
+      id: '4',
+      type: 'warning',
+      title: 'Subscription Expiring',
+      message: 'Your premium membership will expire in 3 days. Renew now to avoid interruption.',
+      time: 'Yesterday 10:20 AM',
+      read: true,
+    },
+    {
+      id: '5',
+      type: 'meeting',
+      title: 'Product Showcase',
+      message: 'You are invited to attend the product showcase tomorrow at 10:00 AM.',
+      time: 'Yesterday 09:00 AM',
+      read: true,
+    },
+  ];
+
   // Pan responder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
@@ -67,6 +126,17 @@ export default function HomeScreen() {
     })
   ).current;
 
+  const handleNotificationPress = (notification: Notification) => {
+    console.log('Notification pressed:', notification);
+    // Handle notification press logic here
+    setShowNotificationPanel(false);
+  };
+
+  const handleClearAllNotifications = () => {
+    console.log('Clear all notifications');
+    // Handle clear all notifications logic here
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <StatusBar
@@ -84,7 +154,7 @@ export default function HomeScreen() {
           <Box className="flex-1 w-full flex-row items-center justify-between py-4">
             <Box className="flex-row items-center gap-4">
               <Box className="rounded-full">
-                <Image source={require("@/assets/images/default-user.png")} className="h-16 w-16" />
+                <Image alt="default-user" source={require("@/assets/images/default-user.png")} className="h-16 w-16" />
               </Box>
               <Box>
                 <Text className="text-2xl font-bold" style={{ color: theme.text }}>
@@ -94,7 +164,7 @@ export default function HomeScreen() {
               </Box>
             </Box>
             <Box className="flex-row items-center gap-4">
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowNotificationPanel(true)}>
                 <Bell size={24} color={theme.text} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {
@@ -778,6 +848,15 @@ export default function HomeScreen() {
           </Box>
         </ScrollView>
       </Box>
+
+      {/* Notification Panel */}
+      <NotificationPanel 
+        isVisible={showNotificationPanel}
+        onClose={() => setShowNotificationPanel(false)}
+        notifications={sampleNotifications}
+        onNotificationPress={handleNotificationPress}
+        onClearAll={handleClearAllNotifications}
+      />
     </SafeAreaView>
   );
 }

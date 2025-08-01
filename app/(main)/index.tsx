@@ -6,7 +6,7 @@ import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
 import { ScrollView, SafeAreaView, StatusBar, View, PanResponder, Animated, Dimensions, Appearance } from "react-native";
 import { Image } from "@/components/ui/image";
-import { Bell, Settings, Users, FileText, Calendar, Clock, X, Sun, Moon } from "lucide-react-native";
+import { Bell, Users, FileText, Calendar, Clock, X, Sun, Moon } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -160,7 +160,7 @@ export default function HomeScreen() {
                 <Text className="text-2xl font-bold" style={{ color: theme.text }}>
                   Arjunan
                 </Text>
-                <Text className="text-sm" style={{ color: theme.text }}>Sanguine Blue Business Solutions</Text>
+                <Text className="text-sm font-medium" style={{ color: theme.text }}>Sanguine Blue Business Solutions</Text>
               </Box>
             </Box>
             <Box className="flex-row items-center gap-4">

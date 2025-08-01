@@ -450,7 +450,7 @@ const Login = () => {
                 >
                   Not a member?{" "}
                 </Text>
-                <TouchableOpacity onPress={() => router.push("/(auth)/register" as any)}>
+                <TouchableOpacity onPress={() => router.push("/(main)" as any)}>
                   <Text 
                     className="text-sm font-medium"
                     style={{ 

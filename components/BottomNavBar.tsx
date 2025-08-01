@@ -60,15 +60,14 @@ const BottomNavBar = () => {
   return (
     <Box style={styles.container}>
       <Box
+        className="rounded-full"
         style={[
           styles.navBar,
           {
-            backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFFFFF",
-            shadowColor: "#000",
+            backgroundColor: colorScheme === "dark" ? theme.background : theme.tint,
+            shadowColor: theme.text,
             shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: colorScheme === "dark" ? 0.3 : 0.1,
-            shadowRadius: 8,
-            elevation: 5,
+            elevation: 0,
           },
         ]}
       >
@@ -87,9 +86,7 @@ const BottomNavBar = () => {
                 style={[
                   styles.iconContainer,
                   active && {
-                    backgroundColor: colorScheme === "dark" 
-                      ? "rgba(160, 118, 249, 0.15)" 
-                      : "rgba(45, 18, 72, 0.1)",
+                    backgroundColor: theme.tint,
                   },
                 ]}
               >
@@ -97,10 +94,8 @@ const BottomNavBar = () => {
                   size={22}
                   color={
                     active
-                      ? theme.tint
-                      : colorScheme === "dark"
-                      ? "#AAAAAA"
-                      : "#888888"
+                      ? theme.text
+                      : theme.background
                   }
                   strokeWidth={active ? 2.5 : 2}
                 />
@@ -109,10 +104,8 @@ const BottomNavBar = () => {
                 className="text-xs mt-1"
                 style={{
                   color: active
-                    ? theme.tint
-                    : colorScheme === "dark"
-                    ? "#AAAAAA"
-                    : "#888888",
+                    ? theme.text
+                    : theme.background,
                   fontWeight: active ? "600" : "normal",
                 }}
               >
@@ -141,7 +134,7 @@ const styles = StyleSheet.create({
     width: width * 0.92,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 30,
+    borderRadius: 999,
   },
   navItem: {
     alignItems: "center",

@@ -120,7 +120,7 @@ export default function MemberSearchScreen() {
   // Handle member selection
   const handleMemberSelect = (member: Member) => {
     router.push({
-      pathname: "/(one-on-one)/schedule",
+      pathname: "/schedule",
       params: { memberId: member.id, memberName: member.name }
     });
   };
@@ -182,11 +182,6 @@ export default function MemberSearchScreen() {
       <Stack.Screen
         options={{
           title: "Find Members",
-          headerLeft: () => (
-            <TouchableOpacity onPress={goBack}>
-              <ArrowLeft size={24} color={theme.text} />
-            </TouchableOpacity>
-          )
         }}
       />
       
@@ -205,7 +200,7 @@ export default function MemberSearchScreen() {
               <Search size={20} color={colorScheme === "dark" ? "#AAAAAA" : "#666666"} />
             </InputSlot>
             <InputField
-              ref={searchInputRef}
+              ref={searchInputRef as any}
               placeholder="Search members by name, company..."
               placeholderTextColor={colorScheme === "dark" ? "#AAAAAA" : "#666666"}
               value={searchQuery}

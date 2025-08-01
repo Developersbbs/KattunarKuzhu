@@ -4,7 +4,7 @@ import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { Calendar as CalendarIcon, Users, UserPlus, Clock, MapPin, CheckCircle, Calendar as CalendarComponent, ChevronLeft, ChevronRight } from "lucide-react-native";
-import { TouchableOpacity, ScrollView, Dimensions, View } from "react-native";
+import { TouchableOpacity, ScrollView, Dimensions, View, Alert } from "react-native";
 import MeetingCard, { Meeting, MeetingType, MeetingStatus } from "@/components/MeetingCard";
 import { useRouter } from "expo-router";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -232,11 +232,19 @@ export default function MeetingsScreen() {
   
   const handleMarkAttendance = (meetingId: string) => {
     console.log("Mark attendance for meeting:", meetingId);
-    // Navigate to attendance marking screen
-    router.push({
-      pathname: "/(attendance)/mark-attendance",
-      params: { meetingId }
-    });
+    // For now, just show an alert since the attendance screen was deleted
+    Alert.alert(
+      "Mark Attendance",
+      "Attendance marking feature is coming soon!",
+      [
+        { text: "OK", onPress: () => console.log("OK Pressed") }
+      ]
+    );
+    // Previous navigation to deleted path:
+    // router.push({
+    //   pathname: "/mark-attendance",
+    //   params: { meetingId }
+    // });
   };
 
   // Function to render the tab content based on active tab
@@ -275,74 +283,77 @@ export default function MeetingsScreen() {
           </TouchableOpacity>
         </Box>
         
-        {/* Day Names */}
-        <Box className="flex-row justify-between mb-2">
-          {dayNames.map((day, index) => (
-            <Box key={index} className="flex-1 items-center">
-              <Text 
-                className="text-xs font-medium"
-                style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
-              >
-                {day}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-        
-        {/* Calendar Grid */}
-        <Box className="flex-row flex-wrap">
-          {calendarDates.map((date, index) => {
-            const isCurrentMonthDate = isCurrentMonth(date);
-            const isTodayDate = isToday(date);
-            const isSelectedDateValue = isSelectedDate(date);
-            const hasMeetingsOnDate = hasMeetings(date);
-            
-            return (
-              <TouchableOpacity 
-                key={index}
-                className="items-center justify-center"
-                style={{
-                  width: width / 7 - 8,
-                  height: width / 7 - 8,
-                  margin: 4,
-                  borderRadius: width / 14,
-                  backgroundColor: isSelectedDateValue 
-                    ? colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.15)"
-                    : "transparent",
-                }}
-                onPress={() => selectDate(date)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  className={`${isTodayDate ? "font-bold" : "font-normal"}`}
-                  style={{
-                    color: !isCurrentMonthDate
-                      ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
-                      : isTodayDate
-                      ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
-                      : theme.text,
-                  }}
+        {/* Calendar Container - Fixed width to ensure alignment */}
+        <Box className="mx-auto" style={{ width: 308 }}>
+          {/* Day Names */}
+          <Box className="flex-row mb-2">
+            {dayNames.map((day, index) => (
+              <Box key={index} style={{ width: 44, height: 30 }} className="items-center justify-center">
+                <Text 
+                  className="text-xs font-medium"
+                  style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
                 >
-                  {date.getDate()}
+                  {day}
                 </Text>
-                
-                {/* Meeting indicator */}
-                {hasMeetingsOnDate && isCurrentMonthDate && (
-                  <View
+              </Box>
+            ))}
+          </Box>
+          
+          {/* Calendar Grid */}
+          <Box className="flex-row flex-wrap">
+            {calendarDates.map((date, index) => {
+              const isCurrentMonthDate = isCurrentMonth(date);
+              const isTodayDate = isToday(date);
+              const isSelectedDateValue = isSelectedDate(date);
+              const hasMeetingsOnDate = hasMeetings(date);
+              
+              return (
+                <Box key={index} style={{ width: 44, height: 44 }} className="items-center justify-center">
+                  <TouchableOpacity 
+                    className="items-center justify-center"
                     style={{
-                      width: 4,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: isTodayDate
-                        ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
-                        : colorScheme === "dark" ? "#AAAAAA" : "#666666",
-                      marginTop: 2,
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: isSelectedDateValue 
+                        ? colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.15)"
+                        : "transparent",
                     }}
-                  />
-                )}
-              </TouchableOpacity>
-            );
-          })}
+                    onPress={() => selectDate(date)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      className={`${isTodayDate ? "font-bold" : "font-normal"}`}
+                      style={{
+                        color: !isCurrentMonthDate
+                          ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
+                          : isTodayDate
+                          ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
+                          : theme.text,
+                      }}
+                    >
+                      {date.getDate()}
+                    </Text>
+                    
+                    {/* Meeting indicator */}
+                    {hasMeetingsOnDate && isCurrentMonthDate && (
+                      <View
+                        style={{
+                          width: 4,
+                          height: 4,
+                          borderRadius: 2,
+                          backgroundColor: isTodayDate
+                            ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
+                            : colorScheme === "dark" ? "#AAAAAA" : "#666666",
+                          marginTop: 2,
+                        }}
+                      />
+                    )}
+                  </TouchableOpacity>
+                </Box>
+              );
+            })}
+          </Box>
         </Box>
         
         {/* Selected Date Meetings */}
@@ -511,7 +522,7 @@ export default function MeetingsScreen() {
         <Button
           className="mb-6 h-12 rounded-lg"
           style={{ backgroundColor: theme.tint }}
-          onPress={() => router.push("/(one-on-one)/member-search")}
+          onPress={() => router.push("/member-search")}
         >
           <UserPlus size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
           <ButtonText style={{ color: "#FFFFFF" }}>Schedule a One-on-One</ButtonText>

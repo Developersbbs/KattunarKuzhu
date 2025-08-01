@@ -3,7 +3,7 @@ import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Input, InputField } from "@/components/ui/input";
-import { TextArea, TextAreaInput } from "@/components/ui/textarea";
+import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectInput, SelectPortal, SelectBackdrop, SelectContent, SelectItem } from "@/components/ui/select";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
@@ -41,11 +41,14 @@ const timeSlots: TimeSlot[] = [
 // Sample durations
 const durations = ["30 minutes", "1 hour", "1.5 hours", "2 hours"];
 
-export default function ScheduleScreen() {
+// Define the ScheduleScreen component
+const ScheduleScreen = () => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const router = useRouter();
-  const { memberId, memberName } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+  const memberId = params.memberId as string;
+  const memberName = params.memberName as string;
   
   // States
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -238,61 +241,64 @@ export default function ScheduleScreen() {
               </TouchableOpacity>
             </Box>
             
-            {/* Day Names */}
-            <Box className="flex-row justify-between mb-2">
-              {dayNames.map((day, index) => (
-                <Box key={index} className="flex-1 items-center">
-                  <Text 
-                    className="text-xs font-medium"
-                    style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
-                  >
-                    {day}
-                  </Text>
-                </Box>
-              ))}
-            </Box>
-            
-            {/* Calendar Grid */}
-            <Box className="flex-row flex-wrap">
-              {dates.map((date, index) => {
-                const isCurrentMonthDate = isCurrentMonth(date);
-                const isTodayDate = isToday(date);
-                const isSelectedDateValue = isSelectedDate(date);
-                
-                return (
-                  <TouchableOpacity 
-                    key={index}
-                    className="items-center justify-center"
-                    style={{
-                      width: width * 0.11,
-                      height: width * 0.11,
-                      margin: 2,
-                      borderRadius: width * 0.055,
-                      backgroundColor: isSelectedDateValue 
-                        ? colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.15)"
-                        : "transparent",
-                    }}
-                    onPress={() => selectDate(date)}
-                    activeOpacity={0.7}
-                    disabled={date < new Date() && !isTodayDate}
-                  >
-                    <Text
-                      className={`${isTodayDate ? "font-bold" : "font-normal"}`}
-                      style={{
-                        color: !isCurrentMonthDate
-                          ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
-                          : date < new Date() && !isTodayDate
-                          ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
-                          : isTodayDate
-                          ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
-                          : theme.text,
-                      }}
+            {/* Calendar Container - Fixed width to ensure alignment */}
+            <Box className="mx-auto" style={{ width: 308 }}>
+              {/* Day Names */}
+              <Box className="flex-row mb-2">
+                {dayNames.map((day, index) => (
+                  <Box key={index} style={{ width: 44, height: 30 }} className="items-center justify-center">
+                    <Text 
+                      className="text-xs font-medium"
+                      style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
                     >
-                      {date.getDate()}
+                      {day}
                     </Text>
-                  </TouchableOpacity>
-                );
-              })}
+                  </Box>
+                ))}
+              </Box>
+              
+              {/* Calendar Grid */}
+              <Box className="flex-row flex-wrap">
+                {dates.map((date, index) => {
+                  const isCurrentMonthDate = isCurrentMonth(date);
+                  const isTodayDate = isToday(date);
+                  const isSelectedDateValue = isSelectedDate(date);
+                  
+                  return (
+                    <Box key={index} style={{ width: 44, height: 44 }} className="items-center justify-center">
+                      <TouchableOpacity 
+                        className="items-center justify-center"
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          backgroundColor: isSelectedDateValue 
+                            ? colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.15)"
+                            : "transparent",
+                        }}
+                        onPress={() => selectDate(date)}
+                        activeOpacity={0.7}
+                        disabled={date < new Date() && !isTodayDate}
+                      >
+                        <Text
+                          className={`${isTodayDate ? "font-bold" : "font-normal"}`}
+                          style={{
+                            color: !isCurrentMonthDate
+                              ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
+                              : date < new Date() && !isTodayDate
+                              ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
+                              : isTodayDate
+                              ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
+                              : theme.text,
+                          }}
+                        >
+                          {date.getDate()}
+                        </Text>
+                      </TouchableOpacity>
+                    </Box>
+                  );
+                })}
+              </Box>
             </Box>
             
             {/* Buttons */}
@@ -319,15 +325,10 @@ export default function ScheduleScreen() {
   };
   
   return (
-    <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 72 }}>
       <Stack.Screen
         options={{
           title: "Schedule Meeting",
-          headerLeft: () => (
-            <TouchableOpacity onPress={goBack}>
-              <ArrowLeft size={24} color={theme.text} />
-            </TouchableOpacity>
-          )
         }}
       />
       
@@ -427,14 +428,14 @@ export default function ScheduleScreen() {
             onValueChange={(value) => setSelectedDuration(value)}
           >
             <SelectTrigger
-              className="rounded-xl p-4"
+              className="rounded-xl px-6 py-2 h-fit "
               style={{
                 backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
                 borderWidth: 1,
                 borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
               }}
             >
-              <Box className="flex-row items-center">
+              <Box className="flex-row items-center h-fit">
                 <Clock size={24} color={theme.tint} />
                 <SelectInput
                   className="ml-3 flex-1"
@@ -446,7 +447,7 @@ export default function ScheduleScreen() {
             </SelectTrigger>
             <SelectPortal>
               <SelectBackdrop />
-              <SelectContent>
+              <SelectContent className="pb-32">
                 {durations.map((duration) => (
                   <SelectItem key={duration} label={duration} value={duration} />
                 ))}
@@ -466,7 +467,7 @@ export default function ScheduleScreen() {
             onValueChange={handleLocationTypeChange}
           >
             <SelectTrigger
-              className="rounded-xl p-4 mb-3"
+              className="rounded-xl px-6 py-2 mb-3 h-fit"
               style={{
                 backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
                 borderWidth: 1,
@@ -485,7 +486,7 @@ export default function ScheduleScreen() {
             </SelectTrigger>
             <SelectPortal>
               <SelectBackdrop />
-              <SelectContent>
+              <SelectContent className="pb-32">
                 <SelectItem label="My Location" value="my_location" />
                 <SelectItem label="Their Location" value="their_location" />
                 <SelectItem label="Other Location" value="other" />
@@ -518,7 +519,7 @@ export default function ScheduleScreen() {
           Meeting Purpose (Optional)
         </Text>
         
-        <TextArea
+        <Textarea
           className="rounded-xl mb-8"
           style={{
             backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
@@ -526,7 +527,7 @@ export default function ScheduleScreen() {
             borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
           }}
         >
-          <TextAreaInput
+          <TextareaInput
             placeholder="Enter the purpose of this meeting..."
             placeholderTextColor={colorScheme === "dark" ? "#AAAAAA" : "#666666"}
             value={purpose}
@@ -534,7 +535,7 @@ export default function ScheduleScreen() {
             style={{ color: theme.text }}
             numberOfLines={4}
           />
-        </TextArea>
+        </Textarea>
         
         {/* Submit Button */}
         <Button
@@ -549,4 +550,10 @@ export default function ScheduleScreen() {
       </Box>
     </ScrollView>
   );
-} 
+};
+
+// Add displayName to the component
+ScheduleScreen.displayName = "ScheduleScreen";
+
+// Export the component
+export default ScheduleScreen; 

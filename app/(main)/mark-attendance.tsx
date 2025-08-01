@@ -371,17 +371,9 @@ export default function MarkAttendanceScreen() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
         <Stack.Screen options={{ 
           title: "Mark Attendance",
-          headerLeft: () => (
-            <TouchableOpacity onPress={goBackToMeetings}>
-              <ArrowLeft size={24} color={theme.text} />
-            </TouchableOpacity>
-          )
         }} />
         
         <Box className="p-4">
-          <Text className="text-2xl font-bold mb-4" style={{ color: theme.text }}>
-            Mark Attendance
-          </Text>
           
           {/* Meeting details */}
           <MeetingCard meeting={meeting} />

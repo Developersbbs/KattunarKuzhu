@@ -366,6 +366,416 @@ export default function HomeScreen() {
 
             </ScrollView>
           </Box>
+          
+          {/* Requirements Post Chart Section */}
+          <Box className="mt-6 px-1">
+            <Box className="flex-row justify-between items-center mb-4">
+              <Text className="text-lg font-semibold" style={{ color: theme.text }}>
+                Requirements
+              </Text>
+              <TouchableOpacity>
+                <Text className="text-sm" style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}>
+                  View All
+                </Text>
+              </TouchableOpacity>
+            </Box>
+            
+            {/* Chart Container */}
+            <Box 
+              className="p-4 rounded-xl"
+              style={{ 
+                backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              {/* Chart Header */}
+              <Box className="flex-row justify-between items-center mb-4">
+                <Box>
+                  <Text className="text-sm font-medium" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                    Total Requirements
+                  </Text>
+                  <Text className="text-2xl font-bold mt-1" style={{ color: theme.text }}>
+                    156
+                  </Text>
+                </Box>
+                <Box 
+                  className="flex-row items-center py-1 px-3 rounded-full"
+                  style={{ 
+                    backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                  }}
+                >
+                  <Text className="text-xs font-medium" style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}>
+                    Last 30 days
+                  </Text>
+                </Box>
+              </Box>
+              
+              {/* Chart Visualization */}
+              <Box className="h-[180px] mt-2">
+                <Box className="flex-row justify-between items-end h-[140px] mb-1">
+                  {[28, 45, 32, 38, 52, 40, 48].map((value, index) => {
+                    // Calculate height percentage (max height is 140px)
+                    const heightPercentage = (value / 52) * 100;
+                    const barHeight = (heightPercentage / 100) * 140;
+                    
+                    // Determine if this is the highest bar
+                    const isHighest = value === 52;
+                    
+                    return (
+                      <Box 
+                        key={index} 
+                        className="rounded-t-md w-[32px]"
+                        style={{
+                          height: barHeight,
+                          backgroundColor: isHighest 
+                            ? colorScheme === "dark" ? "#A076F9" : theme.tint
+                            : colorScheme === "dark" ? "rgba(160, 118, 249, 0.4)" : "rgba(45, 18, 72, 0.3)",
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+                
+                {/* X-axis labels */}
+                <Box className="flex-row justify-between">
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+                    <Text 
+                      key={index} 
+                      className="text-xs text-center w-[32px]"
+                      style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+                    >
+                      {day}
+                    </Text>
+                  ))}
+                </Box>
+              </Box>
+              
+              {/* Chart Legend */}
+              <Box className="flex-row justify-between mt-4 pt-4 border-t" style={{ borderTopColor: colorScheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }}>
+                <Box className="flex-row items-center">
+                  <Box className="w-3 h-3 rounded-sm mr-2" style={{ backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint }} />
+                  <Text className="text-xs" style={{ color: theme.text }}>New Requirements</Text>
+                </Box>
+                <Box className="flex-row items-center">
+                  <Box className="w-3 h-3 rounded-sm mr-2" style={{ backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.4)" : "rgba(45, 18, 72, 0.3)" }} />
+                  <Text className="text-xs" style={{ color: theme.text }}>Average</Text>
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Recent Requirements */}
+            <Box className="mt-4">
+              <Text className="text-base font-medium mb-3" style={{ color: theme.text }}>
+                Recent Requirements
+              </Text>
+              
+              {[
+                { title: "Looking for Java Developer", category: "IT", time: "2h ago", responses: 12 },
+                { title: "Need Accountant for Tax Filing", category: "Finance", time: "5h ago", responses: 8 },
+                { title: "Marketing Specialist Required", category: "Marketing", time: "1d ago", responses: 15 }
+              ].map((item, index) => (
+                <TouchableOpacity 
+                  key={index}
+                  activeOpacity={0.7}
+                >
+                  <Box 
+                    className="p-3 rounded-xl mb-3 flex-row justify-between items-center"
+                    style={{ 
+                      backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
+                      borderWidth: 1,
+                      borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+                    }}
+                  >
+                    <Box className="flex-1">
+                      <Text 
+                        className="font-medium" 
+                        style={{ color: theme.text }}
+                        numberOfLines={1}
+                      >
+                        {item.title}
+                      </Text>
+                      <Box className="flex-row items-center mt-1">
+                        <Box 
+                          className="px-2 py-0.5 rounded-full mr-2"
+                          style={{ 
+                            backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                          }}
+                        >
+                          <Text 
+                            className="text-xs"
+                            style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}
+                          >
+                            {item.category}
+                          </Text>
+                        </Box>
+                        <Text 
+                          className="text-xs"
+                          style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+                        >
+                          {item.time}
+                        </Text>
+                      </Box>
+                    </Box>
+                    <Box 
+                      className="px-2 py-1 rounded-lg"
+                      style={{ 
+                        backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                      }}
+                    >
+                      <Text 
+                        className="text-xs font-medium"
+                        style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}
+                      >
+                        {item.responses} responses
+                      </Text>
+                    </Box>
+                  </Box>
+                </TouchableOpacity>
+              ))}
+              
+              <TouchableOpacity 
+                className="mt-2 items-center py-3"
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}>
+                  View All Requirements
+                </Text>
+              </TouchableOpacity>
+            </Box>
+          </Box>
+
+          {/* Quick Actions Card Section */}
+          <Box className="mt-6 px-1 mb-40">
+            <Box 
+              className="p-4 rounded-xl"
+              style={{ 
+                backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              {/* Quick Actions Header */}
+              <Box className="flex-row items-center justify-between">
+                <Box className="flex-row items-center gap-2">
+                  <Box 
+                    className="p-2 rounded-xl"
+                    style={{ 
+                      backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                    }}
+                  >
+                    <Users size={16} color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
+                  </Box>
+                  <Box>
+                    <Text className="font-medium" style={{ color: theme.text }}>Quick Actions</Text>
+                    <Text className="text-sm" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>Manage referrals</Text>
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box className="mt-4">
+                {/* Referral Actions */}
+                <Box className="flex-row items-center gap-3">
+                  <TouchableOpacity 
+                    className="flex-1 h-10 rounded-full items-center justify-center"
+                    style={{ 
+                      borderWidth: 1,
+                      borderColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.2)",
+                      backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.5)" : "rgba(255, 255, 255, 0.5)",
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ color: theme.text }}>Given</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    className="flex-1 h-10 rounded-full items-center justify-center"
+                    style={{ 
+                      borderWidth: 1,
+                      borderColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.2)",
+                      backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.5)" : "rgba(255, 255, 255, 0.5)",
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ color: theme.text }}>Taken</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    className="h-10 w-10 rounded-full items-center justify-center"
+                    style={{ 
+                      backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-xl" style={{ color: "#FFFFFF", marginTop: -3 }}>+</Text>
+                  </TouchableOpacity>
+                </Box>
+
+                {/* Upcoming Meetings Section */}
+                <Box className="mt-8 pt-6" style={{ borderTopWidth: 1, borderTopColor: colorScheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)" }}>
+                  <Box className="flex-row items-center justify-between mb-4">
+                    <Box className="flex-row items-center gap-2">
+                      <Box 
+                        className="p-2 rounded-xl"
+                        style={{ 
+                          backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                        }}
+                      >
+                        <Calendar size={16} color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
+                      </Box>
+                      <Text className="text-sm font-medium" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                        Upcoming Meetings
+                      </Text>
+                    </Box>
+                    <TouchableOpacity 
+                      className="px-2 py-1 rounded-lg"
+                      activeOpacity={0.7}
+                    >
+                      <Text className="text-xs" style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}>
+                        View All
+                      </Text>
+                    </TouchableOpacity>
+                  </Box>
+
+                  <Box className="space-y-3">
+                    {/* Today's Meeting */}
+                    <TouchableOpacity activeOpacity={0.7}>
+                      <Box 
+                        className="rounded-xl overflow-hidden"
+                        style={{ 
+                          backgroundColor: colorScheme === "dark" ? "rgba(30, 30, 30, 0.8)" : "rgba(245, 245, 245, 0.8)",
+                        }}
+                      >
+                        <Box className="p-4">
+                          <Box className="flex-row items-center justify-between mb-2">
+                            <Box className="flex-row items-center gap-2">
+                              <Box 
+                                className="h-2 w-2 rounded-full" 
+                                style={{ backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint }}
+                              />
+                              <Text className="text-xs font-medium" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                                Today
+                              </Text>
+                            </Box>
+                            <Box 
+                              className="px-2 py-1 rounded-full"
+                              style={{ 
+                                backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
+                              }}
+                            >
+                              <Text className="text-xs" style={{ color: "#FFFFFF" }}>
+                                Now
+                              </Text>
+                            </Box>
+                          </Box>
+                          
+                          <Text className="text-sm font-medium mb-1" style={{ color: theme.text }}>
+                            Weekly Business Network
+                          </Text>
+                          
+                          <Box className="flex-row items-center gap-2">
+                            <Clock size={12} color={colorScheme === "dark" ? "#AAAAAA" : "#666666"} />
+                            <Text className="text-xs" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                              10:00 AM - 12:00 PM
+                            </Text>
+                          </Box>
+                          
+                          <Box 
+                            className="flex-row items-center justify-end mt-3 pt-2" 
+                            style={{ 
+                              borderTopWidth: 1, 
+                              borderTopColor: colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" 
+                            }}
+                          >
+                            <TouchableOpacity 
+                              className="px-4 h-7 rounded-lg items-center justify-center"
+                              style={{ 
+                                backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text className="text-xs font-medium" style={{ color: "#FFFFFF" }}>
+                                Mark Attendance
+                              </Text>
+                            </TouchableOpacity>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </TouchableOpacity>
+
+                    {/* Tomorrow's Meeting */}
+                    <TouchableOpacity activeOpacity={0.7}>
+                      <Box 
+                        className="rounded-xl overflow-hidden"
+                        style={{ 
+                          backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
+                          borderWidth: 1,
+                          borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+                        }}
+                      >
+                        <Box className="p-4">
+                          <Box className="flex-row items-center justify-between mb-2">
+                            <Box className="flex-row items-center gap-2">
+                              <Box 
+                                className="h-2 w-2 rounded-full" 
+                                style={{ backgroundColor: colorScheme === "dark" ? "#555555" : "#CCCCCC" }}
+                              />
+                              <Text className="text-xs font-medium" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                                Tomorrow
+                              </Text>
+                            </Box>
+                            <Box 
+                              className="px-2 py-1 rounded-full"
+                              style={{ 
+                                backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.15)" : "rgba(45, 18, 72, 0.08)",
+                              }}
+                            >
+                              <Text className="text-xs font-medium" style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}>
+                                10:00 AM
+                              </Text>
+                            </Box>
+                          </Box>
+                          
+                          <Text className="text-sm font-medium mb-1" style={{ color: theme.text }}>
+                            Product Showcase
+                          </Text>
+                          
+                          <Box className="flex-row items-center gap-2">
+                            <Clock size={12} color={colorScheme === "dark" ? "#AAAAAA" : "#666666"} />
+                            <Text className="text-xs" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}>
+                              10:00 AM - 11:30 AM
+                            </Text>
+                          </Box>
+                          
+                          <Box 
+                            className="flex-row items-center justify-end mt-3 pt-2" 
+                            style={{ 
+                              borderTopWidth: 1, 
+                              borderTopColor: colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)" 
+                            }}
+                          >
+                            <TouchableOpacity 
+                              className="px-4 h-7 rounded-lg items-center justify-center"
+                              style={{ 
+                                borderWidth: 1,
+                                borderColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.2)",
+                                backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.5)" : "rgba(255, 255, 255, 0.5)",
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text className="text-xs font-medium" style={{ color: theme.text }}>
+                                Remind Me
+                              </Text>
+                            </TouchableOpacity>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </TouchableOpacity>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         </ScrollView>
       </Box>
     </SafeAreaView>

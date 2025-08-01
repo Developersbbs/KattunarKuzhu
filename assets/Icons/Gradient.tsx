@@ -26,7 +26,7 @@ const Gradient = () => {
   
   // Background color for the entire gradient
   const backgroundColor = isDark ? "#121212" : "#FFFFFF";
-  
+
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
       {/* Background fill */}
@@ -60,6 +60,26 @@ const Gradient = () => {
             rx={width * 0.3}
             ry={height * 0.2}
             fill="url(#paint2_radial_dark)"
+            opacity="0.4"
+          />
+          
+          {/* NEW: Bottom gradient blob - covers bottom area */}
+          <Ellipse
+            cx={width * 0.5}
+            cy={height * 1.1}
+            rx={width * 0.9}
+            ry={height * 0.6}
+            fill="url(#paint3_radial_dark)"
+            opacity="0.5"
+          />
+          
+          {/* NEW: Bottom accent gradient - small accent near bottom */}
+          <Ellipse
+            cx={width * 0.7}
+            cy={height * 0.85}
+            rx={width * 0.25}
+            ry={height * 0.15}
+            fill="url(#paint4_radial_dark)"
             opacity="0.4"
           />
           
@@ -102,6 +122,32 @@ const Gradient = () => {
               <Stop offset="0%" stopColor={primaryAccent} />
               <Stop offset="100%" stopColor={primaryAccent} stopOpacity="0" />
             </RadialGradient>
+            
+            {/* NEW: Bottom gradient - deep purple to transparent */}
+            <RadialGradient
+              id="paint3_radial_dark"
+              cx="0"
+              cy="0"
+              r="1"
+              gradientUnits="userSpaceOnUse"
+              gradientTransform={`translate(${width * 0.5} ${height * 1.1}) rotate(90) scale(${width * 0.9} ${height * 0.6})`}
+            >
+              <Stop offset="0%" stopColor={primaryColorLight} />
+              <Stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
+            </RadialGradient>
+            
+            {/* NEW: Bottom accent gradient - purple accent to transparent */}
+            <RadialGradient
+              id="paint4_radial_dark"
+              cx="0"
+              cy="0"
+              r="1"
+              gradientUnits="userSpaceOnUse"
+              gradientTransform={`translate(${width * 0.7} ${height * 0.85}) rotate(90) scale(${width * 0.25} ${height * 0.15})`}
+            >
+              <Stop offset="0%" stopColor={primaryAccent} />
+              <Stop offset="100%" stopColor={primaryAccent} stopOpacity="0" />
+            </RadialGradient>
           </Defs>
         </G>
       ) : (
@@ -133,6 +179,26 @@ const Gradient = () => {
             ry={height * 0.3}
             fill="url(#paint2_radial_light)"
             opacity="0.5"
+          />
+          
+          {/* NEW: Bottom gradient blob - covers bottom area */}
+          <Ellipse
+            cx={width * 0.5}
+            cy={height * 1.1}
+            rx={width * 0.9}
+            ry={height * 0.7}
+            fill="url(#paint3_radial_light)"
+            opacity="0.4"
+          />
+          
+          {/* NEW: Bottom accent gradient - small accent near bottom */}
+          <Ellipse
+            cx={width * 0.8}
+            cy={height * 0.9}
+            rx={width * 0.3}
+            ry={height * 0.2}
+            fill="url(#paint4_radial_light)"
+            opacity="0.4"
           />
           
           <Defs>
@@ -172,6 +238,32 @@ const Gradient = () => {
               gradientTransform={`translate(${width * 0.5} ${height * 0.5}) rotate(90) scale(${width * 0.4} ${height * 0.3})`}
             >
               <Stop offset="0%" stopColor={primaryAccent} stopOpacity="0.7" />
+              <Stop offset="100%" stopColor={primaryAccent} stopOpacity="0" />
+            </RadialGradient>
+            
+            {/* NEW: Bottom gradient - purple to transparent */}
+            <RadialGradient
+              id="paint3_radial_light"
+              cx="0"
+              cy="0"
+              r="1"
+              gradientUnits="userSpaceOnUse"
+              gradientTransform={`translate(${width * 0.5} ${height * 1.1}) rotate(90) scale(${width * 0.9} ${height * 0.7})`}
+            >
+              <Stop offset="0%" stopColor={primaryColorLight} stopOpacity="0.6" />
+              <Stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
+            </RadialGradient>
+            
+            {/* NEW: Bottom accent gradient - purple accent to transparent */}
+            <RadialGradient
+              id="paint4_radial_light"
+              cx="0"
+              cy="0"
+              r="1"
+              gradientUnits="userSpaceOnUse"
+              gradientTransform={`translate(${width * 0.8} ${height * 0.9}) rotate(90) scale(${width * 0.3} ${height * 0.2})`}
+            >
+              <Stop offset="0%" stopColor={primaryAccent} stopOpacity="0.5" />
               <Stop offset="100%" stopColor={primaryAccent} stopOpacity="0" />
             </RadialGradient>
           </Defs>

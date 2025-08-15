@@ -11,6 +11,7 @@ import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useColorScheme } from "@/components/useColorScheme";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { getItem } from "expo-secure-store";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 import "../global.css";
 
@@ -51,8 +52,6 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const [isFirstTime, setIsFirstTime] = useState<boolean | null>(null);
-  const router = useRouter();
-  const segments = useSegments();
 
   useEffect(() => {
     const checkFirstTime = async () => {
@@ -66,27 +65,78 @@ function RootLayoutNav() {
     checkFirstTime();
   }, []);
 
-  useEffect(() => {
-    if (isFirstTime === null) {
-      return;
-    }
-
-    if (!isFirstTime) {
-      router.replace("/");
-    } else if (isFirstTime) {
-      router.replace("/onboarding");
-    }
-  }, [isFirstTime]);
-
   if (isFirstTime === null) {
     return <></>;
   }
 
   return (
-    <GluestackUIProvider mode="light">
-      <ThemeProvider value={DefaultTheme}>
-        <Slot />
-      </ThemeProvider>
-    </GluestackUIProvider>
+    <AuthProvider>
+      <AuthStateListener initialIsFirstTime={isFirstTime} />
+      <GluestackUIProvider mode="light">
+        <ThemeProvider value={DefaultTheme}>
+          <Slot />
+        </ThemeProvider>
+      </GluestackUIProvider>
+    </AuthProvider>
   );
+}
+
+// Auth state listener component for navigation control
+function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean | null }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(initialIsFirstTime);
+
+  // Check if the user has completed onboarding
+  useEffect(() => {
+    const checkFirstTime = async () => {
+      const firstTime = await getItem("isFirstTime");
+      console.log('First time check:', firstTime);
+      setIsFirstTime(firstTime === "false" ? false : true);
+    };
+    checkFirstTime();
+    
+    // Set up a listener to check for changes to isFirstTime
+    const interval = setInterval(checkFirstTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading || isFirstTime === null) {
+      // Still loading, don't redirect yet
+      return;
+    }
+
+    const inAuthGroup = segments[0] === "(auth)";
+    const inOnboarding = segments[0] === "onboarding";
+    const currentPath = segments.join('/');
+    
+    console.log('Navigation check:', { isFirstTime, isAuthenticated, inAuthGroup, inOnboarding, currentPath });
+
+    // Don't redirect if already at the correct location
+    if (isFirstTime && inOnboarding) {
+      return;
+    }
+    
+    if (inAuthGroup && currentPath === "(auth)/login") {
+      return;
+    }
+
+    if (isFirstTime) {
+      // First time user should see onboarding
+      console.log('Redirecting to onboarding');
+      router.replace("/onboarding");
+    } else if (!isAuthenticated) {
+      // Unauthenticated user should go to login
+      console.log('Redirecting to login');
+      router.replace("/(auth)/login");
+    } else if (isAuthenticated && (inAuthGroup || inOnboarding)) {
+      // Authenticated user should go to main app
+      console.log('Redirecting to main');
+      router.replace("/(main)");
+    }
+  }, [isAuthenticated, isLoading, segments, isFirstTime, router]);
+
+  return null;
 }

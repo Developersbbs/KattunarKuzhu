@@ -3,6 +3,7 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
+import { setItem } from 'expo-secure-store';
 import { useTheme } from '@react-navigation/native';
 import { Image } from '@/components/ui/image';
 import { ChevronRightIcon, ChevronLeftIcon } from 'lucide-react-native';
@@ -29,15 +30,30 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleAllowNotifications = () => {
+  const handleAllowNotifications = async () => {
     console.log('Notification permission allowed');
+    // Mark onboarding as completed
+    await setItem('isFirstTime', 'false');
     setIsModalVisible(false);
-    router.push('/(auth)/login');
+    
+    // Add a small delay to ensure the secure store is updated
+    setTimeout(() => {
+      console.log('Navigating to login after notification permission');
+      router.replace('/(auth)/login');
+    }, 100);
   };
 
-  const handleSkipNotifications = () => {
+  const handleSkipNotifications = async () => {
+    console.log('Skipping notifications');
+    // Mark onboarding as completed
+    await setItem('isFirstTime', 'false');
     setIsModalVisible(false);
-    router.push('/(auth)/login');
+    
+    // Add a small delay to ensure the secure store is updated
+    setTimeout(() => {
+      console.log('Navigating to login after skipping notifications');
+      router.replace('/(auth)/login');
+    }, 100);
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { RecaptchaVerifier } from "firebase/auth";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -30,6 +31,8 @@ import {
   Animated,
 } from "react-native";
 import { X, ChevronDown } from "lucide-react-native";
+import { initRecaptchaVerifier, sendVerificationCode, signInWithCode } from "@/services/auth";
+import { useAuth } from "@/context/AuthContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -96,8 +99,18 @@ const Login = () => {
     }
   };
 
+  // reCAPTCHA verifier reference
+  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
+
+  // Initialize reCAPTCHA on web platform
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      recaptchaVerifierRef.current = initRecaptchaVerifier('recaptcha-container');
+    }
+  }, []);
+
   // Request OTP handler
-  const handleRequestOtp = () => {
+  const handleRequestOtp = async () => {
     if (phoneNumber.length !== 10) {
       toast.show({
         placement: "top",
@@ -111,24 +124,55 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsOtpRequested(true);
-      setTimeLeft(30);
+    
+    try {
+      // Format phone number with country code
+      const formattedPhoneNumber = `${countryCode.code}${phoneNumber}`;
+      
+      // Send verification code
+      const success = await sendVerificationCode(
+        formattedPhoneNumber,
+        recaptchaVerifierRef.current || undefined
+      );
+      
+      if (success) {
+        setIsOtpRequested(true);
+        setTimeLeft(30);
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="success">
+              <ToastTitle>OTP sent successfully</ToastTitle>
+            </Toast>
+          ),
+        });
+      } else {
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="error">
+              <ToastTitle>Failed to send OTP. Please try again.</ToastTitle>
+            </Toast>
+          ),
+        });
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
       toast.show({
         placement: "top",
         render: ({ id }: { id: string }) => (
-          <Toast nativeID={id} variant="solid" action="success">
-            <ToastTitle>OTP sent successfully</ToastTitle>
+          <Toast nativeID={id} variant="solid" action="error">
+            <ToastTitle>An error occurred. Please try again.</ToastTitle>
           </Toast>
         ),
       });
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Verify OTP handler
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const otpValue = otp.join("");
     if (otpValue.length !== 6) {
       toast.show({
@@ -143,11 +187,48 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    try {
+      // Sign in with the verification code
+      const userCredential = await signInWithCode(verificationId, otpValue);
+      
+      if (userCredential) {
+        // Authentication successful
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="success">
+              <ToastTitle>Authentication successful</ToastTitle>
+            </Toast>
+          ),
+        });
+        
+        // Navigate to main app
+        router.replace("/(main)");
+      } else {
+        // Authentication failed
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="error">
+              <ToastTitle>Invalid verification code. Please try again.</ToastTitle>
+            </Toast>
+          ),
+        });
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast.show({
+        placement: "top",
+        render: ({ id }: { id: string }) => (
+          <Toast nativeID={id} variant="solid" action="error">
+            <ToastTitle>An error occurred during verification. Please try again.</ToastTitle>
+          </Toast>
+        ),
+      });
+    } finally {
       setIsLoading(false);
-      router.replace("/(main)");
-    }, 1500);
+    }
   };
 
   // Reset phone number
@@ -171,6 +252,11 @@ const Login = () => {
         <Box className="absolute top-0 left-0 right-0 bottom-0">
           <Gradient />
         </Box>
+        
+        {/* reCAPTCHA container for web */}
+        {Platform.OS === 'web' && (
+          <div id="recaptcha-container" style={{ display: 'none' }}></div>
+        )}
 
         {/* Logo Section */}
         <Box className="flex-1 justify-center items-center pt-16 gap-6">
@@ -520,7 +606,7 @@ const Login = () => {
                 >
                   Not a member?{" "}
                 </Text>
-                <TouchableOpacity onPress={() => router.push("/(main)" as any)}>
+                <TouchableOpacity onPress={() => router.push("/(auth)/register" as any)}>
                   <Text
                     className="text-sm font-medium"
                     style={{

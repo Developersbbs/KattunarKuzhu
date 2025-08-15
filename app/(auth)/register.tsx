@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "expo-router";
 import { RegisterFormData } from "@/types/register";
-import { initRecaptchaVerifier, sendVerificationCode, signInWithCode } from "@/services/auth";
+import { initRecaptchaVerifier, sendVerificationCode, signInWithCode } from "../../services/auth";
 
 // Import step components
 import Stepper from "@/components/register/Stepper";
@@ -208,8 +208,8 @@ export default function Register() {
 
       const result = await sendVerificationCode(fullPhoneNumber);
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (!result.success || result.error) {
+        throw new Error(result.error || "Failed to send OTP");
       }
 
       setVerificationId(result.verificationId);
@@ -230,8 +230,8 @@ export default function Register() {
       const fullPhoneNumber = `${countryCode}${phoneNumber}`;
       const result = await sendVerificationCode(fullPhoneNumber);
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (!result.success || result.error) {
+        throw new Error(result.error || "Failed to resend OTP");
       }
 
       setVerificationId(result.verificationId);

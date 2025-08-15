@@ -49,6 +49,8 @@
     <string>This app uses the camera to enable profile photo uploads.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>This app uses your location to show nearby community events.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>This app uses the photo library to enable profile photo uploads.</string>
     <key>NSUserActivityTypes</key>

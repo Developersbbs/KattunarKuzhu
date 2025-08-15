@@ -36,6 +36,8 @@
       },
       "package": "com.kattunarkuzhu.app",
       "versionCode": 1,
+      "minSdkVersion": 24,
+      "compileSdkVersion": 35,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

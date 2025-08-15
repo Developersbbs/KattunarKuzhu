@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { RecaptchaVerifier } from "firebase/auth";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -31,8 +31,12 @@ import {
   Animated,
 } from "react-native";
 import { X, ChevronDown } from "lucide-react-native";
-import { initRecaptchaVerifier, sendVerificationCode, signInWithCode } from "@/services/auth";
+import {
+  verifyPhoneNumber,
+  confirmVerificationCode,
+} from "@/services/auth";
 import { useAuth } from "@/context/AuthContext";
+import { app } from "@/services/firebase";
 
 const { width, height } = Dimensions.get("window");
 
@@ -58,6 +62,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   // OTP input refs
   const otpInputRefs = useRef<Array<React.RefObject<any>>>([]);
@@ -100,14 +105,7 @@ const Login = () => {
   };
 
   // reCAPTCHA verifier reference
-  const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
-
-  // Initialize reCAPTCHA on web platform
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      recaptchaVerifierRef.current = initRecaptchaVerifier('recaptcha-container');
-    }
-  }, []);
+  const recaptchaVerifier = useRef(null);
 
   // Request OTP handler
   const handleRequestOtp = async () => {
@@ -130,12 +128,13 @@ const Login = () => {
       const formattedPhoneNumber = `${countryCode.code}${phoneNumber}`;
       
       // Send verification code
-      const success = await sendVerificationCode(
+      const result = await verifyPhoneNumber(
         formattedPhoneNumber,
-        recaptchaVerifierRef.current || undefined
+        recaptchaVerifier
       );
       
-      if (success) {
+      if (result.success && result.verificationId) {
+        setVerificationId(result.verificationId);
         setIsOtpRequested(true);
         setTimeLeft(30);
         toast.show({
@@ -151,7 +150,9 @@ const Login = () => {
           placement: "top",
           render: ({ id }: { id: string }) => (
             <Toast nativeID={id} variant="solid" action="error">
-              <ToastTitle>Failed to send OTP. Please try again.</ToastTitle>
+              <ToastTitle>
+                {result.error || "Failed to send OTP. Please try again."}
+              </ToastTitle>
             </Toast>
           ),
         });
@@ -189,10 +190,13 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      if (!verificationId) {
+        throw new Error("Verification ID is missing.");
+      }
       // Sign in with the verification code
-      const userCredential = await signInWithCode(verificationId, otpValue);
+      const result = await confirmVerificationCode(verificationId, otpValue);
       
-      if (userCredential) {
+      if (result.success) {
         // Authentication successful
         toast.show({
           placement: "top",
@@ -211,7 +215,10 @@ const Login = () => {
           placement: "top",
           render: ({ id }: { id: string }) => (
             <Toast nativeID={id} variant="solid" action="error">
-              <ToastTitle>Invalid verification code. Please try again.</ToastTitle>
+              <ToastTitle>
+                {result.error ||
+                  "Invalid verification code. Please try again."}
+              </ToastTitle>
             </Toast>
           ),
         });
@@ -252,11 +259,12 @@ const Login = () => {
         <Box className="absolute top-0 left-0 right-0 bottom-0">
           <Gradient />
         </Box>
-        
-        {/* reCAPTCHA container for web */}
-        {Platform.OS === 'web' && (
-          <div id="recaptcha-container" style={{ display: 'none' }}></div>
-        )}
+
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={app.options}
+          attemptInvisibleVerification={true}
+        />
 
         {/* Logo Section */}
         <Box className="flex-1 justify-center items-center pt-16 gap-6">

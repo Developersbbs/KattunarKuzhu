@@ -1,0 +1,15 @@
+diff --git a/node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle b/node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle
+index 98c404e..239d6db 100644
+--- a/node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle
++++ b/node_modules/expo-modules-autolinking/scripts/android/autolinking_implementation.gradle
+@@ -330,7 +330,9 @@ if (rootProject instanceof ProjectDescriptor) {
+       for (module in modules) {
+         for (modulePlugin in module.plugins) {
+           println " ${Emojis.INFORMATION}  ${Colors.YELLOW}Applying gradle plugin${Colors.RESET} '${Colors.GREEN}${modulePlugin.id}${Colors.RESET}' (${module.name}@${module.version})"
+-          project.plugins.apply(modulePlugin.id)
++          if (project.name != "app") {
++            project.plugins.apply(modulePlugin.id)
++          }
+         }
+       }
+     }

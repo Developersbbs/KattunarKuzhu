@@ -201,30 +201,30 @@ const Gradient = () => {
             opacity="0.4"
           />
           
-          <Defs>
+      <Defs>
             {/* Main gradient - purple to transparent */}
-            <RadialGradient
+        <RadialGradient
               id="paint0_radial_light"
-              cx="0"
-              cy="0"
-              r="1"
-              gradientUnits="userSpaceOnUse"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
               gradientTransform={`translate(${width * 0.7} ${height * 0.3}) rotate(90) scale(${width * 0.8} ${height * 0.6})`}
-            >
-              <Stop offset="0%" stopColor={primaryColorLight} />
-              <Stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
-            </RadialGradient>
+        >
+          <Stop offset="0%" stopColor={primaryColorLight} />
+          <Stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
+        </RadialGradient>
             
             {/* Secondary gradient - light gray to transparent */}
-            <RadialGradient
+        <RadialGradient
               id="paint1_radial_light"
-              cx="0"
-              cy="0"
-              r="1"
-              gradientUnits="userSpaceOnUse"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
               gradientTransform={`translate(${width * 0.3} ${height * 0.8}) rotate(90) scale(${width * 0.7} ${height * 0.5})`}
-            >
-              <Stop offset="0%" stopColor={secondaryColor} />
+        >
+          <Stop offset="0%" stopColor={secondaryColor} />
               <Stop offset="100%" stopColor={secondaryColorLight} stopOpacity="0" />
             </RadialGradient>
             
@@ -265,8 +265,8 @@ const Gradient = () => {
             >
               <Stop offset="0%" stopColor={primaryAccent} stopOpacity="0.5" />
               <Stop offset="100%" stopColor={primaryAccent} stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
+        </RadialGradient>
+      </Defs>
         </G>
       )}
     </Svg>

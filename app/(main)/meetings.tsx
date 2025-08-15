@@ -3,8 +3,8 @@ import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { Calendar as CalendarIcon, Users, UserPlus, Clock, MapPin, CheckCircle, Calendar as CalendarComponent, ChevronLeft, ChevronRight } from "lucide-react-native";
-import { TouchableOpacity, ScrollView, Dimensions, View, Alert } from "react-native";
+import { Calendar as CalendarIcon, Users, UserPlus, Clock, MapPin, CheckCircle, Calendar as CalendarComponent, ChevronLeft, ChevronRight, X, ChevronDown } from "lucide-react-native";
+import { TouchableOpacity, ScrollView, Dimensions, View, Alert, Modal } from "react-native";
 import MeetingCard, { Meeting, MeetingType, MeetingStatus } from "@/components/MeetingCard";
 import { useRouter } from "expo-router";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -22,18 +22,18 @@ const sampleMeetings: Meeting[] = [
     status: "current",
     date: "Today, 15 Aug 2023",
     time: "10:00 AM - 12:00 PM",
-    location: "Business Center, T.Nagar",
+    location: "Arulraj Builders Office, T.Nagar",
     attendees: 24,
     description: "Regular weekly meeting for business networking and knowledge sharing."
   },
   {
     id: "2",
-    title: "Product Showcase",
+    title: "Interior Decorators Roundtable",
     type: "special",
     status: "upcoming",
     date: "Tomorrow, 16 Aug 2023",
     time: "10:00 AM - 11:30 AM",
-    location: "Conference Hall, Velachery",
+    location: "Selvi Interiors Studio, Velachery",
     attendees: 18,
   },
   {
@@ -75,7 +75,7 @@ interface OneOnOne {
   id: string;
   personName: string;
   personCompany?: string;
-  status: "pending_sent" | "pending_received" | "confirmed" | "completed" | "declined";
+  status: "pending_sent" | "pending_received" | "confirmed" | "completed" | "declined" | "in_progress";
   date?: string;
   time?: string;
   location?: string;
@@ -86,20 +86,20 @@ interface OneOnOne {
 const sampleOneOnOnes: OneOnOne[] = [
   {
     id: "1",
-    personName: "John Smith",
-    personCompany: "ABC Technologies",
+    personName: "Arulraj",
+    personCompany: "Arulraj Builders",
     status: "pending_sent",
   },
   {
     id: "2",
-    personName: "Sarah Williams",
-    personCompany: "XYZ Solutions",
+    personName: "Selvi",
+    personCompany: "Selvi Interiors",
     status: "pending_received",
   },
   {
     id: "3",
-    personName: "Michael Johnson",
-    personCompany: "Johnson & Co.",
+    personName: "Karthikeyan",
+    personCompany: "Karthik Painters",
     status: "confirmed",
     date: "Tomorrow, 16 Aug 2023",
     time: "2:30 PM - 3:30 PM",
@@ -107,8 +107,8 @@ const sampleOneOnOnes: OneOnOne[] = [
   },
   {
     id: "4",
-    personName: "Emily Davis",
-    personCompany: "Davis Enterprises",
+    personName: "Meenakshi",
+    personCompany: "Meenakshi Electricals",
     status: "completed",
     date: "05 Aug 2023",
     time: "11:00 AM - 12:00 PM",
@@ -117,11 +117,33 @@ const sampleOneOnOnes: OneOnOne[] = [
   },
   {
     id: "5",
-    personName: "Robert Wilson",
-    personCompany: "Wilson Consulting",
+    personName: "Prakash",
+    personCompany: "Prakash Plumbing",
     status: "declined",
     date: "03 Aug 2023",
+  },
+  {
+    id: "6",
+    personName: "Emma Thompson",
+    personCompany: "Tech Solutions",
+    status: "in_progress",
+    date: "Today, 15 Aug 2023",
+    time: "10:00 AM - 11:00 AM",
+    location: "Meeting Room 1, T.Nagar",
   }
+];
+
+// Sample time slots for reschedule
+const rescheduleTimeSlots = [
+  { id: "1", time: "09:00 AM", available: true },
+  { id: "2", time: "10:00 AM", available: true },
+  { id: "3", time: "11:00 AM", available: false },
+  { id: "4", time: "12:00 PM", available: true },
+  { id: "5", time: "01:00 PM", available: true },
+  { id: "6", time: "02:00 PM", available: false },
+  { id: "7", time: "03:00 PM", available: true },
+  { id: "8", time: "04:00 PM", available: true },
+  { id: "9", time: "05:00 PM", available: true },
 ];
 
 export default function MeetingsScreen() {
@@ -132,6 +154,14 @@ export default function MeetingsScreen() {
   const [calendarDates, setCalendarDates] = useState<Date[]>([]);
   const [meetingsForSelectedDate, setMeetingsForSelectedDate] = useState<Meeting[]>([]);
   const router = useRouter();
+  
+  // States for reschedule modal
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState(new Date());
+  const [rescheduleTime, setRescheduleTime] = useState<string | null>(null);
+  const [rescheduleOneOnOneId, setRescheduleOneOnOneId] = useState<string | null>(null);
+  const [showRescheduleDatePicker, setShowRescheduleDatePicker] = useState(false);
+  const [currentRescheduleMonth, setCurrentRescheduleMonth] = useState(new Date());
   
   // Generate calendar dates for current month view
   useEffect(() => {
@@ -230,21 +260,129 @@ export default function MeetingsScreen() {
     return Math.random() > 0.7;
   };
   
+  // Handle mark attendance
   const handleMarkAttendance = (meetingId: string) => {
     console.log("Mark attendance for meeting:", meetingId);
-    // For now, just show an alert since the attendance screen was deleted
+    // Navigate to attendance marking screen
+    router.push({
+      pathname: "/mark-attendance",
+      params: { meetingId }
+    });
+  };
+
+  // Open reschedule modal
+  const openRescheduleModal = (oneOnOneId: string) => {
+    setRescheduleOneOnOneId(oneOnOneId);
+    setRescheduleDate(new Date());
+    setRescheduleTime(null);
+    setCurrentRescheduleMonth(new Date());
+    setShowRescheduleModal(true);
+  };
+
+  // Close reschedule modal
+  const closeRescheduleModal = () => {
+    setShowRescheduleModal(false);
+    setRescheduleOneOnOneId(null);
+  };
+
+  // Show reschedule date picker
+  const showRescheduleDatePickerModal = () => {
+    setShowRescheduleDatePicker(true);
+  };
+
+  // Generate calendar dates for reschedule date picker
+  const generateRescheduleDates = () => {
+    const year = currentRescheduleMonth.getFullYear();
+    const month = currentRescheduleMonth.getMonth();
+    
+    // First day of month
+    const firstDay = new Date(year, month, 1);
+    const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Last day of month
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    
+    // Generate array of dates for the month view
+    const dates: Date[] = [];
+    
+    // Add dates from previous month to fill the first week
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      dates.push(new Date(year, month - 1, prevMonthLastDay - i));
+    }
+    
+    // Add dates from current month
+    for (let i = 1; i <= daysInMonth; i++) {
+      dates.push(new Date(year, month, i));
+    }
+    
+    // Add dates from next month to fill the last week
+    const remainingDays = 42 - dates.length; // 6 rows of 7 days
+    for (let i = 1; i <= remainingDays; i++) {
+      dates.push(new Date(year, month + 1, i));
+    }
+    
+    return dates;
+  };
+
+  // Navigation functions for reschedule month
+  const goToPreviousRescheduleMonth = () => {
+    const prevMonth = new Date(currentRescheduleMonth);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    setCurrentRescheduleMonth(prevMonth);
+  };
+
+  const goToNextRescheduleMonth = () => {
+    const nextMonth = new Date(currentRescheduleMonth);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    setCurrentRescheduleMonth(nextMonth);
+  };
+
+  // Helper functions for reschedule date comparison
+  const isCurrentRescheduleMonth = (date: Date) => {
+    return date.getMonth() === currentRescheduleMonth.getMonth();
+  };
+
+  const isRescheduleSelectedDate = (date: Date) => {
+    return date.getDate() === rescheduleDate.getDate() &&
+           date.getMonth() === rescheduleDate.getMonth() &&
+           date.getFullYear() === rescheduleDate.getFullYear();
+  };
+
+  // Select reschedule date
+  const selectRescheduleDate = (date: Date) => {
+    setRescheduleDate(date);
+    setShowRescheduleDatePicker(false);
+  };
+
+  // Handle reschedule time slot selection
+  const handleRescheduleTimeSelect = (slotId: string) => {
+    setRescheduleTime(slotId);
+  };
+
+  // Submit reschedule request
+  const submitRescheduleRequest = () => {
+    if (!rescheduleTime) {
+      Alert.alert("Please select a time slot");
+      return;
+    }
+
+    const selectedTimeSlot = rescheduleTimeSlots.find(slot => slot.id === rescheduleTime);
+    
     Alert.alert(
-      "Mark Attendance",
-      "Attendance marking feature is coming soon!",
+      "Reschedule Request Sent",
+      `Your reschedule request has been sent for ${rescheduleDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} at ${selectedTimeSlot?.time}.`,
       [
-        { text: "OK", onPress: () => console.log("OK Pressed") }
+        { text: "OK", onPress: () => closeRescheduleModal() }
       ]
     );
-    // Previous navigation to deleted path:
-    // router.push({
-    //   pathname: "/mark-attendance",
-    //   params: { meetingId }
-    // });
+    
+    console.log("Reschedule request sent:", {
+      oneOnOneId: rescheduleOneOnOneId,
+      date: rescheduleDate,
+      time: selectedTimeSlot?.time
+    });
   };
 
   // Function to render the tab content based on active tab
@@ -508,11 +646,14 @@ export default function MeetingsScreen() {
     const pendingSent = sampleOneOnOnes.filter(item => item.status === "pending_sent");
     const pendingReceived = sampleOneOnOnes.filter(item => item.status === "pending_received");
     const confirmed = sampleOneOnOnes.filter(item => item.status === "confirmed");
+    const inProgress = sampleOneOnOnes.filter(item => item.status === "in_progress");
     const completed = sampleOneOnOnes.filter(item => item.status === "completed");
     const declined = sampleOneOnOnes.filter(item => item.status === "declined");
     
     // Combine pending sent and received for the requests section
     const pendingRequests = [...pendingSent, ...pendingReceived];
+    // Combine confirmed and in-progress for the upcoming section
+    const upcomingOneOnOnes = [...confirmed, ...inProgress];
     // Combine completed and declined for the past section
     const pastOneOnOnes = [...completed, ...declined];
     
@@ -560,8 +701,8 @@ export default function MeetingsScreen() {
             Upcoming One-on-Ones
           </Text>
           
-          {confirmed.length > 0 ? (
-            confirmed.map(oneOnOne => renderOneOnOneCard(oneOnOne))
+          {upcomingOneOnOnes.length > 0 ? (
+            upcomingOneOnOnes.map(oneOnOne => renderOneOnOneCard(oneOnOne))
           ) : (
             <Box className="items-center justify-center py-6 rounded-xl"
               style={{
@@ -623,6 +764,8 @@ export default function MeetingsScreen() {
           return colorScheme === "dark" ? "rgba(0, 120, 60, 0.2)" : "rgba(0, 150, 80, 0.1)";
         case "declined":
           return colorScheme === "dark" ? "rgba(180, 0, 0, 0.2)" : "rgba(220, 0, 0, 0.1)";
+        case "in_progress":
+          return colorScheme === "dark" ? "rgba(0, 120, 220, 0.4)" : "rgba(0, 120, 220, 0.2)";
         default:
           return colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)";
       }
@@ -640,6 +783,8 @@ export default function MeetingsScreen() {
           return colorScheme === "dark" ? "#4CAF50" : "#2E7D32";
         case "declined":
           return colorScheme === "dark" ? "#F44336" : "#C62828";
+        case "in_progress":
+          return colorScheme === "dark" ? "#00BCD4" : "#0097A7";
         default:
           return theme.text;
       }
@@ -658,6 +803,8 @@ export default function MeetingsScreen() {
           return "Completed";
         case "declined":
           return "Declined";
+        case "in_progress":
+          return "In Progress";
         default:
           return "Unknown";
       }
@@ -668,7 +815,7 @@ export default function MeetingsScreen() {
       switch (oneOnOne.status) {
         case "pending_sent":
           return (
-            <Box className="flex-row justify-end mt-3">
+            <Box className="flex-row justify-end mt-3 space-x-2 gap-4">
               <TouchableOpacity
                 className="px-4 py-2 rounded-lg"
                 style={{
@@ -684,11 +831,27 @@ export default function MeetingsScreen() {
                   Cancel Request
                 </Text>
               </TouchableOpacity>
+              
+              <TouchableOpacity
+                className="px-4 py-2 rounded-lg"
+                style={{
+                  backgroundColor: colorScheme === "dark" ? "rgba(33, 150, 243, 0.2)" : "rgba(33, 150, 243, 0.1)",
+                }}
+                activeOpacity={0.7}
+                onPress={() => openRescheduleModal(oneOnOne.id)}
+              >
+                <Text
+                  className="text-sm"
+                  style={{ color: colorScheme === "dark" ? "#2196F3" : "#0D47A1" }}
+                >
+                  Reschedule
+                </Text>
+              </TouchableOpacity>
             </Box>
           );
         case "pending_received":
           return (
-            <Box className="flex-row justify-end mt-3 space-x-2">
+            <Box className="flex-row justify-end mt-3 space-x-2 gap-4">
               <TouchableOpacity
                 className="px-4 py-2 rounded-lg"
                 style={{
@@ -702,6 +865,22 @@ export default function MeetingsScreen() {
                   style={{ color: colorScheme === "dark" ? "#F44336" : "#C62828" }}
                 >
                   Decline
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                className="px-4 py-2 rounded-lg"
+                style={{
+                  backgroundColor: colorScheme === "dark" ? "rgba(33, 150, 243, 0.2)" : "rgba(33, 150, 243, 0.1)",
+                }}
+                activeOpacity={0.7}
+                onPress={() => openRescheduleModal(oneOnOne.id)}
+              >
+                <Text
+                  className="text-sm"
+                  style={{ color: colorScheme === "dark" ? "#2196F3" : "#0D47A1" }}
+                >
+                  Reschedule
                 </Text>
               </TouchableOpacity>
               
@@ -731,13 +910,36 @@ export default function MeetingsScreen() {
                   backgroundColor: colorScheme === "dark" ? "rgba(33, 150, 243, 0.2)" : "rgba(33, 150, 243, 0.1)",
                 }}
                 activeOpacity={0.7}
-                onPress={() => console.log("Reschedule:", oneOnOne.id)}
+                onPress={() => openRescheduleModal(oneOnOne.id)}
               >
                 <Text
                   className="text-sm"
                   style={{ color: colorScheme === "dark" ? "#2196F3" : "#0D47A1" }}
                 >
                   Reschedule
+                </Text>
+              </TouchableOpacity>
+            </Box>
+          );
+        case "in_progress":
+          return (
+            <Box className="flex-row justify-end mt-3">
+              <TouchableOpacity
+                className="px-4 py-2 rounded-lg"
+                style={{
+                  backgroundColor: colorScheme === "dark" ? "rgba(0, 188, 212, 0.2)" : "rgba(0, 151, 167, 0.1)",
+                }}
+                activeOpacity={0.7}
+                onPress={() => router.push({
+                  pathname: "/(main)/one-on-one-selfie",
+                  params: { oneOnOneId: oneOnOne.id, personName: oneOnOne.personName }
+                })}
+              >
+                <Text
+                  className="text-sm"
+                  style={{ color: colorScheme === "dark" ? "#00BCD4" : "#0097A7" }}
+                >
+                  Take Selfie
                 </Text>
               </TouchableOpacity>
             </Box>
@@ -752,7 +954,10 @@ export default function MeetingsScreen() {
                     backgroundColor: colorScheme === "dark" ? "rgba(33, 150, 243, 0.2)" : "rgba(33, 150, 243, 0.1)",
                   }}
                   activeOpacity={0.7}
-                  onPress={() => console.log("Upload selfie:", oneOnOne.id)}
+                  onPress={() => router.push({
+                    pathname: "/(main)/one-on-one-selfie",
+                    params: { oneOnOneId: oneOnOne.id, personName: oneOnOne.personName }
+                  })}
                 >
                   <Text
                     className="text-sm"
@@ -976,6 +1181,234 @@ export default function MeetingsScreen() {
       <ScrollView className="flex-1">
         {renderTabContent()}
       </ScrollView>
+
+      {/* Reschedule Modal */}
+      <Modal
+        visible={showRescheduleModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeRescheduleModal}
+      >
+        <Box
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <Box
+            className="rounded-t-3xl p-4"
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFFFFF",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 5,
+              elevation: 5,
+            }}
+          >
+            <Box className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-bold" style={{ color: theme.text }}>
+                Request Reschedule
+              </Text>
+              <TouchableOpacity onPress={closeRescheduleModal}>
+                <X size={24} color={theme.text} />
+              </TouchableOpacity>
+            </Box>
+
+            {/* Date Selection */}
+            <Text className="text-lg font-semibold mb-2" style={{ color: theme.text }}>
+              Select Date
+            </Text>
+            
+            <TouchableOpacity
+              className="flex-row items-center p-4 rounded-xl mb-6"
+              style={{
+                backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
+                borderWidth: 1,
+                borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+              }}
+              onPress={showRescheduleDatePickerModal}
+              activeOpacity={0.7}
+            >
+              <CalendarIcon size={24} color={theme.tint} />
+              <Text className="ml-3 flex-1" style={{ color: theme.text }}>
+                {rescheduleDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </Text>
+              <ChevronDown size={20} color={colorScheme === "dark" ? "#AAAAAA" : "#666666"} />
+            </TouchableOpacity>
+            
+            {/* Time Slots */}
+            <Text className="text-lg font-semibold mb-2" style={{ color: theme.text }}>
+              Select Time
+            </Text>
+            
+            <Box className="flex-row flex-wrap mb-6">
+              {rescheduleTimeSlots.map((slot) => (
+                <TouchableOpacity
+                  key={slot.id}
+                  className="m-1 px-4 py-2 rounded-full"
+                  style={{
+                    backgroundColor: rescheduleTime === slot.id
+                      ? theme.tint
+                      : colorScheme === "dark"
+                      ? "rgba(42, 42, 42, 0.8)"
+                      : "rgba(245, 245, 245, 0.8)",
+                    borderWidth: 1,
+                    borderColor: rescheduleTime === slot.id
+                      ? theme.tint
+                      : colorScheme === "dark"
+                      ? "rgba(80, 80, 80, 0.3)"
+                      : "rgba(0, 0, 0, 0.05)",
+                    opacity: slot.available ? 1 : 0.5,
+                  }}
+                  onPress={() => slot.available && handleRescheduleTimeSelect(slot.id)}
+                  disabled={!slot.available}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={{
+                      color: rescheduleTime === slot.id
+                        ? "#FFFFFF"
+                        : theme.text,
+                    }}
+                  >
+                    {slot.time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </Box>
+            
+            {/* Submit Button */}
+            <Button
+              className="h-14 rounded-xl"
+              style={{ backgroundColor: theme.tint }}
+              onPress={submitRescheduleRequest}
+            >
+              <ButtonText style={{ color: "#FFFFFF" }}>
+                Send Reschedule Request
+              </ButtonText>
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+
+      {/* Date Picker Modal */}
+      <Modal
+        visible={showRescheduleDatePicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRescheduleDatePicker(false)}
+      >
+        <Box
+          className="flex-1 justify-center items-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <Box
+            className="w-[90%] rounded-xl p-4"
+            style={{
+              backgroundColor: colorScheme === "dark" ? "#1E1E1E" : "#FFFFFF",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
+            {/* Header */}
+            <Box className="flex-row justify-between items-center mb-4">
+              <TouchableOpacity onPress={goToPreviousRescheduleMonth} activeOpacity={0.7}>
+                <ChevronLeft size={24} color={theme.text} />
+              </TouchableOpacity>
+              
+              <Text className="text-lg font-semibold" style={{ color: theme.text }}>
+                {currentRescheduleMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </Text>
+              
+              <TouchableOpacity onPress={goToNextRescheduleMonth} activeOpacity={0.7}>
+                <ChevronRight size={24} color={theme.text} />
+              </TouchableOpacity>
+            </Box>
+            
+            {/* Calendar Container - Fixed width to ensure alignment */}
+            <Box className="mx-auto" style={{ width: 308 }}>
+              {/* Day Names */}
+              <Box className="flex-row mb-2">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+                  <Box key={index} style={{ width: 44, height: 30 }} className="items-center justify-center">
+                    <Text 
+                      className="text-xs font-medium"
+                      style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+                    >
+                      {day}
+                    </Text>
+                  </Box>
+                ))}
+              </Box>
+              
+              {/* Calendar Grid */}
+              <Box className="flex-row flex-wrap">
+                {generateRescheduleDates().map((date, index) => {
+                  const isCurrentMonthDate = isCurrentRescheduleMonth(date);
+                  const isTodayDate = isToday(date);
+                  const isSelectedDateValue = isRescheduleSelectedDate(date);
+                  const today = new Date();
+                  const isPastDate = date < today && !isTodayDate;
+                  
+                  return (
+                    <Box key={index} style={{ width: 44, height: 44 }} className="items-center justify-center">
+                      <TouchableOpacity 
+                        className="items-center justify-center"
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          backgroundColor: isSelectedDateValue 
+                            ? colorScheme === "dark" ? "rgba(160, 118, 249, 0.3)" : "rgba(45, 18, 72, 0.15)"
+                            : "transparent",
+                        }}
+                        onPress={() => selectRescheduleDate(date)}
+                        activeOpacity={0.7}
+                        disabled={isPastDate}
+                      >
+                        <Text
+                          className={`${isTodayDate ? "font-bold" : "font-normal"}`}
+                          style={{
+                            color: !isCurrentMonthDate
+                              ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
+                              : isPastDate
+                              ? colorScheme === "dark" ? "#555555" : "#CCCCCC"
+                              : isTodayDate
+                              ? colorScheme === "dark" ? "#A076F9" : "#2D1248"
+                              : theme.text,
+                          }}
+                        >
+                          {date.getDate()}
+                        </Text>
+                      </TouchableOpacity>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+            
+            {/* Buttons */}
+            <Box className="flex-row justify-end mt-4">
+              <TouchableOpacity
+                className="px-4 py-2 mr-2 rounded"
+                onPress={() => setShowRescheduleDatePicker(false)}
+              >
+                <Text style={{ color: theme.text }}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                className="px-4 py-2 rounded"
+                style={{ backgroundColor: theme.tint }}
+                onPress={() => setShowRescheduleDatePicker(false)}
+              >
+                <Text style={{ color: "#FFFFFF" }}>Done</Text>
+              </TouchableOpacity>
+            </Box>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 } 

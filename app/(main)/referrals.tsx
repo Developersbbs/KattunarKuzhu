@@ -23,7 +23,7 @@ export default function ReferralsScreen() {
           className="text-base text-center mt-2"
           style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
         >
-          Manage your referrals and connections
+          No referrals yet created
         </Text>
       </Box>
     </Box>

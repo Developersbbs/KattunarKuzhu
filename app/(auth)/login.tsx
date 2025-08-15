@@ -4,14 +4,31 @@ import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Image } from "@/components/ui/image";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectInput, SelectPortal, SelectBackdrop, SelectContent, SelectItem, SelectIcon } from "@/components/ui/select";
-import { useToast, Toast, ToastTitle } from '@/components/ui/toast';
+import {
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectItem,
+  SelectIcon,
+} from "@/components/ui/select";
+import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
-import { TouchableOpacity, View, Dimensions, Keyboard, Platform, KeyboardAvoidingView, Animated } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  Dimensions,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView,
+  Animated,
+} from "react-native";
 import { X, ChevronDown } from "lucide-react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -30,7 +47,7 @@ const Login = () => {
   const theme = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const toast = useToast();
-  
+
   // States
   const [phoneNumber, setPhoneNumber] = useState("");
   const [countryCode, setCountryCode] = useState(countryCodes[0]);
@@ -38,17 +55,17 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(30);
-  
+
   // OTP input refs
   const otpInputRefs = useRef<Array<React.RefObject<any>>>([]);
-  
+
   // Initialize OTP input refs
   useEffect(() => {
     otpInputRefs.current = Array(6)
       .fill(0)
       .map((_, i) => otpInputRefs.current[i] || React.createRef());
   }, []);
-  
+
   // Timer for OTP resend
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -59,26 +76,26 @@ const Login = () => {
     }
     return () => clearInterval(timer);
   }, [isOtpRequested, timeLeft]);
-  
+
   // Handle OTP input change
   const handleOtpChange = (text: string, index: number) => {
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
-    
+
     // Auto-advance to next input
     if (text.length === 1 && index < 5) {
       otpInputRefs.current[index + 1]?.current?.focus();
     }
   };
-  
+
   // Handle OTP key press for backspace
   const handleOtpKeyPress = (e: any, index: number) => {
     if (e.nativeEvent.key === "Backspace" && index > 0 && !otp[index]) {
       otpInputRefs.current[index - 1]?.current?.focus();
     }
   };
-  
+
   // Request OTP handler
   const handleRequestOtp = () => {
     if (phoneNumber.length !== 10) {
@@ -92,7 +109,7 @@ const Login = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -109,7 +126,7 @@ const Login = () => {
       });
     }, 1500);
   };
-  
+
   // Verify OTP handler
   const handleVerifyOtp = () => {
     const otpValue = otp.join("");
@@ -124,7 +141,7 @@ const Login = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
@@ -132,12 +149,12 @@ const Login = () => {
       router.replace("/(main)");
     }, 1500);
   };
-  
+
   // Reset phone number
   const resetPhoneNumber = () => {
     setPhoneNumber("");
   };
-  
+
   // Change phone number
   const changePhoneNumber = () => {
     setIsOtpRequested(false);
@@ -154,32 +171,32 @@ const Login = () => {
         <Box className="absolute top-0 left-0 right-0 bottom-0">
           <Gradient />
         </Box>
-        
+
         {/* Logo Section */}
         <Box className="flex-1 justify-center items-center pt-16 gap-6">
-          <Image 
+          <Image
             alt="logo"
-            source={require("@/assets/images/logo.png")} 
+            source={require("@/assets/images/logo.png")}
             className="w-28 h-28 rounded-full"
             resizeMode="contain"
           />
           <Box className="items-center mb-12">
             <Text className="text-3xl font-bold" style={{ color: theme.text }}>
-            கட்டுனர் குழு 
+              கட்டுனர் குழு
             </Text>
-            <Text 
-              className="text-base mt-1" 
+            <Text
+              className="text-base mt-1"
               style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
             >
               Welcome back!
             </Text>
           </Box>
         </Box>
-        
+
         {/* Bottom Sheet */}
-        <Box 
+        <Box
           className="rounded-t-[32px] px-6 pb-8 pt-6"
-          style={{ 
+          style={{
             backgroundColor: colorScheme === "dark" ? "#1E1E1E" : theme.tint,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: -3 },
@@ -190,50 +207,62 @@ const Login = () => {
         >
           <Box className="space-y-4">
             <Box className="space-y-1">
-              <Text 
+              <Text
                 className="text-2xl font-semibold"
-                style={{ color: colorScheme === "dark" ? "#FFFFFF" : "#FFFFFF" }}
+                style={{
+                  color: colorScheme === "dark" ? "#FFFFFF" : "#FFFFFF",
+                }}
               >
                 Login
               </Text>
-              <Text 
+              <Text
                 className="text-sm mb-2"
-                style={{ color: colorScheme === "dark" ? "#DDDDDD" : "rgba(255,255,255,0.8)" }}
+                style={{
+                  color:
+                    colorScheme === "dark"
+                      ? "#DDDDDD"
+                      : "rgba(255,255,255,0.8)",
+                }}
               >
                 {!isOtpRequested
                   ? "Enter your mobile number to receive OTP"
                   : "Enter the OTP sent to your mobile"}
               </Text>
             </Box>
-            
+
             {!isOtpRequested ? (
               <Box className="flex flex-col gap-5">
                 <Box className="flex flex-col gap-3">
-                  <Box className="flex-row items-center">
+                  <Box className="flex-row items-center gap-1">
                     {/* Country Code Selector */}
-                    <Box 
-                      className="h-14 rounded-l-xl justify-center"
+                    <Box
+                      className="h-14 rounded-l-xl justify-center overflow-hidden"
                       style={{
-                        backgroundColor: colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
+                        backgroundColor:
+                          colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
                         width: 90,
                         borderRightWidth: 1,
-                        borderRightColor: colorScheme === "dark" ? "#3A3A3A" : "#E5E5E5",
+                        borderTopLeftRadius: 32,
+                        borderBottomLeftRadius: 32,
+                        borderRightColor:
+                          colorScheme === "dark" ? "#3A3A3A" : "#E5E5E5",
                       }}
                     >
                       <Select
                         onValueChange={(value) => {
-                          const selected = countryCodes.find(c => c.code === value);
+                          const selected = countryCodes.find(
+                            (c) => c.code === value
+                          );
                           if (selected) setCountryCode(selected);
                         }}
                         selectedValue={countryCode.code}
                       >
-                        <SelectTrigger
-                          className="h-full justify-center items-center px-2"
-                        >
+                        <SelectTrigger className="h-full justify-center items-center px-2">
                           <SelectInput
                             placeholder="Code"
-                            style={{ 
-                              color: colorScheme === "dark" ? "#FFFFFF" : "#000000",
+                            style={{
+                              color:
+                                colorScheme === "dark" ? "#FFFFFF" : "#000000",
                               fontWeight: "bold",
                               textAlign: "center",
                             }}
@@ -255,7 +284,7 @@ const Login = () => {
                         </SelectPortal>
                       </Select>
                     </Box>
-                    
+
                     {/* Phone Input */}
                     <Box className="flex-1 relative">
                       <Input
@@ -263,11 +292,12 @@ const Login = () => {
                         size="lg"
                         className="flex-1"
                         style={{
-                          backgroundColor: colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
+                          backgroundColor:
+                            colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
                           borderColor: "transparent",
                           borderTopLeftRadius: 0,
                           borderBottomLeftRadius: 0,
-                          borderRadius: 12,
+                          borderRadius: 32,
                           height: 56,
                         }}
                       >
@@ -277,16 +307,19 @@ const Login = () => {
                           maxLength={10}
                           onChangeText={setPhoneNumber}
                           value={phoneNumber}
-                          placeholderTextColor={colorScheme === "dark" ? "#AAAAAA" : "#888888"}
+                          placeholderTextColor={
+                            colorScheme === "dark" ? "#AAAAAA" : "#888888"
+                          }
                           style={{
-                            color: colorScheme === "dark" ? "#FFFFFF" : "#000000",
+                            color:
+                              colorScheme === "dark" ? "#FFFFFF" : "#000000",
                             fontSize: 16,
                           }}
                         />
                       </Input>
-                      
+
                       {phoneNumber.length > 0 && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           onPress={resetPhoneNumber}
                           style={{
                             position: "absolute",
@@ -295,38 +328,49 @@ const Login = () => {
                             transform: [{ translateY: -12 }],
                           }}
                         >
-                          <X 
-                            size={20} 
-                            color={colorScheme === "dark" ? "#AAAAAA" : "#888888"} 
+                          <X
+                            size={20}
+                            color={
+                              colorScheme === "dark" ? "#AAAAAA" : "#888888"
+                            }
                           />
                         </TouchableOpacity>
                       )}
                     </Box>
                   </Box>
-                  
-                  <Text 
+
+                  <Text
                     className="text-xs ml-2"
-                    style={{ color: colorScheme === "dark" ? "#AAAAAA" : "rgba(255,255,255,0.7)" }}
+                    style={{
+                      color:
+                        colorScheme === "dark"
+                          ? "#AAAAAA"
+                          : "rgba(255,255,255,0.7)",
+                    }}
                   >
                     We'll send you a one-time password
                   </Text>
                 </Box>
-                
-                <Button 
+
+                <Button
                   className="w-full h-14 rounded-full"
-                  style={{ 
-                    backgroundColor: colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
+                  style={{
+                    backgroundColor:
+                      colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
                     opacity: phoneNumber.length !== 10 ? 0.5 : 1,
                   }}
                   onPress={handleRequestOtp}
                   disabled={phoneNumber.length !== 10 || isLoading}
                 >
                   {isLoading ? (
-                    <Spinner size="small" color={colorScheme === "dark" ? "#FFFFFF" : theme.tint} />
+                    <Spinner
+                      size="small"
+                      color={colorScheme === "dark" ? "#FFFFFF" : theme.tint}
+                    />
                   ) : (
-                    <ButtonText 
+                    <ButtonText
                       className="font-bold"
-                      style={{ 
+                      style={{
                         color: colorScheme === "dark" ? "#FFFFFF" : theme.tint,
                       }}
                     >
@@ -345,8 +389,10 @@ const Login = () => {
                       variant="outline"
                       size="lg"
                       style={{
-                        backgroundColor: colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
-                        borderColor: colorScheme === "dark" ? "#3A3A3A" : "#E5E5E5",
+                        backgroundColor:
+                          colorScheme === "dark" ? "#2A2A2A" : "#FFFFFF",
+                        borderColor:
+                          colorScheme === "dark" ? "#3A3A3A" : "#E5E5E5",
                         borderRadius: 12,
                         height: 56,
                         width: width * 0.12,
@@ -359,7 +405,9 @@ const Login = () => {
                         onChangeText={(text) => handleOtpChange(text, index)}
                         onKeyPress={(e) => handleOtpKeyPress(e, index)}
                         value={otp[index]}
-                        placeholderTextColor={colorScheme === "dark" ? "#AAAAAA" : "#888888"}
+                        placeholderTextColor={
+                          colorScheme === "dark" ? "#AAAAAA" : "#888888"
+                        }
                         style={{
                           color: colorScheme === "dark" ? "#FFFFFF" : "#000000",
                           textAlign: "center",
@@ -371,27 +419,40 @@ const Login = () => {
                     </Input>
                   ))}
                 </Box>
-                
+
                 <Box className="flex-row justify-between items-center">
-                  <Text 
+                  <Text
                     className="text-xs"
-                    style={{ color: colorScheme === "dark" ? "#AAAAAA" : "rgba(255,255,255,0.7)" }}
+                    style={{
+                      color:
+                        colorScheme === "dark"
+                          ? "#AAAAAA"
+                          : "rgba(255,255,255,0.7)",
+                    }}
                   >
                     OTP sent to {countryCode.code} {phoneNumber}
                   </Text>
-                  
+
                   {timeLeft > 0 ? (
-                    <Text 
+                    <Text
                       className="text-xs"
-                      style={{ color: colorScheme === "dark" ? "#AAAAAA" : "rgba(255,255,255,0.7)" }}
+                      style={{
+                        color:
+                          colorScheme === "dark"
+                            ? "#AAAAAA"
+                            : "rgba(255,255,255,0.7)",
+                      }}
                     >
                       Resend OTP in {timeLeft}s
                     </Text>
                   ) : (
-                    <TouchableOpacity onPress={handleRequestOtp} disabled={isLoading}>
-                      <Text 
+                    <TouchableOpacity
+                      onPress={handleRequestOtp}
+                      disabled={isLoading}
+                    >
+                      <Text
                         className="text-sm font-medium"
-                        style={{ 
+                        style={{
                           color: colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
                         }}
                       >
@@ -400,22 +461,26 @@ const Login = () => {
                     </TouchableOpacity>
                   )}
                 </Box>
-                
-                <Button 
+
+                <Button
                   className="w-full h-14 rounded-full"
-                  style={{ 
-                    backgroundColor: colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
+                  style={{
+                    backgroundColor:
+                      colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
                     opacity: otp.join("").length !== 6 ? 0.5 : 1,
                   }}
                   onPress={handleVerifyOtp}
                   disabled={otp.join("").length !== 6 || isLoading}
                 >
                   {isLoading ? (
-                    <Spinner size="small" color={colorScheme === "dark" ? "#FFFFFF" : theme.tint} />
+                    <Spinner
+                      size="small"
+                      color={colorScheme === "dark" ? "#FFFFFF" : theme.tint}
+                    />
                   ) : (
-                    <ButtonText 
+                    <ButtonText
                       className="font-bold"
-                      style={{ 
+                      style={{
                         color: colorScheme === "dark" ? "#FFFFFF" : theme.tint,
                       }}
                     >
@@ -423,15 +488,15 @@ const Login = () => {
                     </ButtonText>
                   )}
                 </Button>
-                
-                <TouchableOpacity 
-                  onPress={changePhoneNumber} 
+
+                <TouchableOpacity
+                  onPress={changePhoneNumber}
                   disabled={isLoading}
                   className="items-center py-2"
                 >
-                  <Text 
+                  <Text
                     className="text-sm font-medium"
-                    style={{ 
+                    style={{
                       color: colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
                     }}
                   >
@@ -440,20 +505,25 @@ const Login = () => {
                 </TouchableOpacity>
               </Box>
             )}
-            
+
             {/* Registration Link */}
             <Box className="items-center mt-4">
               <Box className="flex-row">
-                <Text 
+                <Text
                   className="text-sm"
-                  style={{ color: colorScheme === "dark" ? "#DDDDDD" : "rgba(255,255,255,0.8)" }}
+                  style={{
+                    color:
+                      colorScheme === "dark"
+                        ? "#DDDDDD"
+                        : "rgba(255,255,255,0.8)",
+                  }}
                 >
                   Not a member?{" "}
                 </Text>
                 <TouchableOpacity onPress={() => router.push("/(main)" as any)}>
-                  <Text 
+                  <Text
                     className="text-sm font-medium"
-                    style={{ 
+                    style={{
                       color: colorScheme === "dark" ? "#A076F9" : "#FFFFFF",
                     }}
                   >

@@ -43,8 +43,10 @@ export default function MarkAttendanceScreen() {
   const [locationStatus, setLocationStatus] = useState<"checking" | "success" | "error" | "not_started">("not_started");
   const [distanceToMeeting, setDistanceToMeeting] = useState<number | null>(null);
   const [currentStep, setCurrentStep] = useState<"verify" | "confirm" | "success">("verify");
-  const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null);
-  const [mapLoading, setMapLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number}>({
+    latitude: meetingCoordinates.latitude,
+    longitude: meetingCoordinates.longitude
+  });
   
   // Animation values for the pulsating effect
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -84,11 +86,16 @@ export default function MarkAttendanceScreen() {
   // Start location verification
   const startLocationVerification = () => {
     setLocationStatus("checking");
-    setMapLoading(true);
     
     // In a real app, you would use the device's GPS to get the user's location
     // and compare it with the meeting location
     // For this example, we'll simulate the process
+    
+    // Show map immediately with loading state
+    setUserLocation({
+      latitude: meetingCoordinates.latitude,
+      longitude: meetingCoordinates.longitude
+    });
     
     setTimeout(() => {
       // Simulate getting user's location (slightly different from meeting location)
@@ -99,7 +106,6 @@ export default function MarkAttendanceScreen() {
       };
       
       setUserLocation(simulatedUserLocation);
-      setMapLoading(false);
       
       // Calculate distance (simplified for simulation)
       // In a real app, you would use the Haversine formula or a mapping API
@@ -144,17 +150,6 @@ export default function MarkAttendanceScreen() {
   
   // Render the map UI
   const renderMapUI = () => {
-    if (mapLoading) {
-      return (
-        <Box className="items-center justify-center py-8">
-          <ActivityIndicator size="large" color={theme.tint} />
-          <Text className="mt-4 text-center" style={{ color: theme.text }}>
-            Loading map...
-          </Text>
-        </Box>
-      );
-    }
-    
     return (
       <Box className="h-[200px] rounded-lg overflow-hidden mb-4 relative">
         {/* Simulated map background */}
@@ -396,8 +391,8 @@ export default function MarkAttendanceScreen() {
               Please ensure your device's location services are enabled.
             </Text>
             
-            {/* Map UI */}
-            {(locationStatus !== "not_started" || mapLoading) && renderMapUI()}
+            {/* Map UI - always show the map */}
+            {renderMapUI()}
             
             {locationStatus === "not_started" && (
               <Button
@@ -412,8 +407,7 @@ export default function MarkAttendanceScreen() {
             
             {locationStatus === "checking" && (
               <Box className="items-center justify-center py-4">
-                <ActivityIndicator size="large" color={theme.tint} />
-                <Text className="mt-4 text-center" style={{ color: theme.text }}>
+                <Text className="text-center" style={{ color: theme.text }}>
                   Verifying your location...
                 </Text>
               </Box>

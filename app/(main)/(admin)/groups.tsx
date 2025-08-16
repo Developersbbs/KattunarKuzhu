@@ -1,12 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { ScrollView, SafeAreaView, StatusBar, FlatList, Animated } from "react-native";
+import { ScrollView, SafeAreaView, StatusBar, FlatList, Animated, ActivityIndicator, Alert } from "react-native";
 import { Image } from "@/components/ui/image";
-import { Users, Plus, Search, X, ChevronDown, Filter, Info } from "lucide-react-native";
+import { Users, Plus, Search, X, ChevronDown, Filter, Info, AlertCircle } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import Gradient from "@/assets/Icons/Gradient";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
@@ -28,47 +28,9 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { fetchGroups, createGroup, Group as GroupType, CreateGroupDto } from "@/services/groups";
 
-// Sample data for groups
-const sampleGroups = [
-  {
-    id: "1",
-    name: "Business Network Group",
-    memberCount: 24,
-    groupHead: "Arjunan",
-    imageUrl: require("@/assets/images/default-user.png"),
-  },
-  {
-    id: "2",
-    name: "Technology Professionals",
-    memberCount: 18,
-    groupHead: "Ramesh",
-    imageUrl: require("@/assets/images/default-user.png"),
-  },
-  {
-    id: "3",
-    name: "Healthcare Providers",
-    memberCount: 15,
-    groupHead: "Suresh",
-    imageUrl: require("@/assets/images/default-user.png"),
-  },
-  {
-    id: "4",
-    name: "Real Estate Network",
-    memberCount: 12,
-    groupHead: "Karthik",
-    imageUrl: require("@/assets/images/default-user.png"),
-  },
-  {
-    id: "5",
-    name: "Education Professionals",
-    memberCount: 20,
-    groupHead: "Priya",
-    imageUrl: require("@/assets/images/default-user.png"),
-  },
-];
-
-// Sample data for members
+// Sample data for members - in a real app, this would come from an API
 const sampleMembers = [
   { id: "1", name: "Arjunan", role: "Admin" },
   { id: "2", name: "Ramesh", role: "Member" },
@@ -85,6 +47,12 @@ export default function GroupsScreen() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
   const [selectedGroupHead, setSelectedGroupHead] = useState("");
+  
+  // State for groups data
+  const [groups, setGroups] = useState<GroupType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   
   // Animation values for create button
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -107,31 +75,74 @@ export default function GroupsScreen() {
     }).start();
   };
 
+  // Fetch groups on component mount
+  useEffect(() => {
+    loadGroups();
+  }, []);
+
+  // Function to load groups from API
+  const loadGroups = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchGroups();
+      setGroups(data);
+    } catch (err) {
+      console.error('Failed to fetch groups:', err);
+      setError('Failed to load groups. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter groups based on search query
-  const filteredGroups = sampleGroups.filter((group) =>
+  const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateGroup = () => {
-    // Logic to create a new group would go here
-    console.log("Creating new group:", { 
-      name: newGroupName, 
-      description: newGroupDescription,
-      groupHead: selectedGroupHead 
-    });
+  // Handle group creation
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim()) return;
     
-    // Show success feedback (in a real app, this would be after API response)
-    // For now, we'll just reset and close
-    setNewGroupName("");
-    setNewGroupDescription("");
-    setSelectedGroupHead("");
-    setIsCreateModalOpen(false);
+    const groupData: CreateGroupDto = {
+      name: newGroupName.trim(),
+    };
+    
+    if (newGroupDescription?.trim()) {
+      groupData.description = newGroupDescription.trim();
+    }
+    
+    if (selectedGroupHead) {
+      groupData.groupHead = selectedGroupHead;
+    }
+    
+    try {
+      setCreating(true);
+      const newGroup = await createGroup(groupData);
+      
+      // Add the new group to the state
+      setGroups(prevGroups => [...prevGroups, newGroup]);
+      
+      // Reset form and close modal
+      setNewGroupName("");
+      setNewGroupDescription("");
+      setSelectedGroupHead("");
+      setIsCreateModalOpen(false);
+      
+      // Show success message
+      Alert.alert('Success', 'Group created successfully');
+    } catch (err) {
+      console.error('Failed to create group:', err);
+      Alert.alert('Error', 'Failed to create group. Please try again.');
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const renderGroupItem = ({ item }: { item: any }) => (
+  const renderGroupItem = ({ item }: { item: GroupType }) => (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={() => console.log(`View group ${item.id}`)}
+      onPress={() => console.log(`View group ${item._id}`)}
     >
       <Box
         className="p-4 rounded-xl mb-4 flex-row items-center"
@@ -142,11 +153,14 @@ export default function GroupsScreen() {
         }}
       >
         <Box className="mr-4">
-          <Image
-            source={item.imageUrl}
-            alt={item.name}
-            className="h-16 w-16 rounded-full"
-          />
+          <Box 
+            className="h-16 w-16 rounded-full items-center justify-center"
+            style={{
+              backgroundColor: colorScheme === "dark" ? "rgba(160, 118, 249, 0.2)" : "rgba(45, 18, 72, 0.1)",
+            }}
+          >
+            <Users size={24} color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
+          </Box>
         </Box>
         <Box className="flex-1">
           <Text className="text-lg font-semibold" style={{ color: theme.text }}>
@@ -158,15 +172,26 @@ export default function GroupsScreen() {
               className="ml-1 text-sm"
               style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
             >
-              {item.memberCount} members
+              {item.members?.length || 0} members
             </Text>
           </Box>
-          <Text
-            className="text-sm mt-1"
-            style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}
-          >
-            Group Head: {item.groupHead}
-          </Text>
+          {item.groupHead && (
+            <Text
+              className="text-sm mt-1"
+              style={{ color: colorScheme === "dark" ? "#A076F9" : theme.tint }}
+            >
+              Group Head: {item.groupHead}
+            </Text>
+          )}
+          {item.description && (
+            <Text
+              className="text-sm mt-1"
+              style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+              numberOfLines={1}
+            >
+              {item.description}
+            </Text>
+          )}
         </Box>
       </Box>
     </TouchableOpacity>
@@ -232,13 +257,52 @@ export default function GroupsScreen() {
           </Box>
 
           {/* Groups List */}
-          {filteredGroups.length > 0 ? (
+          {loading ? (
+            <Box className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
+              <Text
+                className="mt-4 text-center"
+                style={{ color: theme.text }}
+              >
+                Loading groups...
+              </Text>
+            </Box>
+          ) : error ? (
+            <Box className="flex-1 items-center justify-center p-4">
+              <AlertCircle size={64} color={colorScheme === "dark" ? "#ff6b6b" : "#d63031"} />
+              <Text
+                className="text-xl font-semibold mt-4 text-center"
+                style={{ color: theme.text }}
+              >
+                Something went wrong
+              </Text>
+              <Text
+                className="text-sm text-center mt-2 mb-4"
+                style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+              >
+                {error}
+              </Text>
+              <Button
+                className="rounded-xl px-4 py-2"
+                style={{
+                  backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
+                }}
+                onPress={loadGroups}
+              >
+                <ButtonText style={{ color: "#FFFFFF" }}>
+                  Try Again
+                </ButtonText>
+              </Button>
+            </Box>
+          ) : filteredGroups.length > 0 ? (
             <FlatList
               data={filteredGroups}
               renderItem={renderGroupItem}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item._id}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 100 }}
+              refreshing={loading}
+              onRefresh={loadGroups}
             />
           ) : (
             <Box className="flex-1 items-center justify-center">
@@ -247,14 +311,29 @@ export default function GroupsScreen() {
                 className="text-xl font-semibold mt-4 text-center"
                 style={{ color: theme.text }}
               >
-                No groups found
+                {searchQuery ? "No matching groups found" : "No groups yet"}
               </Text>
               <Text
                 className="text-sm text-center mt-2"
                 style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
               >
-                Try a different search term or create a new group
+                {searchQuery 
+                  ? "Try a different search term or create a new group" 
+                  : "Create your first group to get started"}
               </Text>
+              {searchQuery && (
+                <Button
+                  className="mt-4 rounded-xl"
+                  style={{
+                    backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
+                  }}
+                  onPress={() => setSearchQuery("")}
+                >
+                  <ButtonText style={{ color: "#FFFFFF" }}>
+                    Clear Search
+                  </ButtonText>
+                </Button>
+              )}
             </Box>
           )}
         </Box>
@@ -467,14 +546,23 @@ export default function GroupsScreen() {
                     className="rounded-xl px-5 py-3 h-fit"
                     style={{
                       backgroundColor: colorScheme === "dark" ? "#A076F9" : theme.tint,
-                      opacity: !newGroupName.trim() ? 0.6 : 1,
+                      opacity: !newGroupName.trim() || creating ? 0.6 : 1,
                     }}
                     onPress={handleCreateGroup}
-                    isDisabled={!newGroupName.trim()}
+                    isDisabled={!newGroupName.trim() || creating}
                   >
-                    <ButtonText style={{ color: "#FFFFFF", fontWeight: "600" }}>
-                      Create Group
-                    </ButtonText>
+                    {creating ? (
+                      <Box className="flex-row items-center">
+                        <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                        <ButtonText style={{ color: "#FFFFFF", fontWeight: "600" }}>
+                          Creating...
+                        </ButtonText>
+                      </Box>
+                    ) : (
+                      <ButtonText style={{ color: "#FFFFFF", fontWeight: "600" }}>
+                        Create Group
+                      </ButtonText>
+                    )}
                   </Button>
                 </Box>
               </Box>

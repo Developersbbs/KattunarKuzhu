@@ -30,6 +30,14 @@ export {
 // Define the initial route to be the custom home screen
 export const unstable_settings = {
   initialRouteName: "(main)",
+  // Configure nested layouts
+  "/(main)": {
+    initialRouteName: "index",
+  },
+  "/(main)/(admin)": {
+    headerShown: false,
+    navigationBarHidden: true
+  },
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

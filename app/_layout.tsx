@@ -95,10 +95,6 @@ function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean
       setIsFirstTime(firstTime === "false" ? false : true);
     };
     checkFirstTime();
-    
-    // Set up a listener to check for changes to isFirstTime
-    const interval = setInterval(checkFirstTime, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -109,31 +105,22 @@ function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean
 
     const inAuthGroup = segments[0] === "(auth)";
     const inOnboarding = segments[0] === "onboarding";
-    const currentPath = segments.join('/');
-    
-    console.log('Navigation check:', { isFirstTime, isAuthenticated, inAuthGroup, inOnboarding, currentPath });
-
-    // Don't redirect if already at the correct location
-    if (isFirstTime && inOnboarding) {
-      return;
-    }
-    
-    if (inAuthGroup && currentPath === "(auth)/login") {
-      return;
-    }
 
     if (isFirstTime) {
       // First time user should see onboarding
-      console.log('Redirecting to onboarding');
-      router.replace("/onboarding");
+      if (!inOnboarding) {
+        router.replace("/onboarding");
+      }
     } else if (!isAuthenticated) {
       // Unauthenticated user should go to login
-      console.log('Redirecting to login');
-      router.replace("/(auth)/login");
-    } else if (isAuthenticated && (inAuthGroup || inOnboarding)) {
+      if (!inAuthGroup) {
+        router.replace("/(auth)/login");
+      }
+    } else {
       // Authenticated user should go to main app
-      console.log('Redirecting to main');
-      router.replace("/(main)");
+      if (inAuthGroup || inOnboarding) {
+        router.replace("/(main)");
+      }
     }
   }, [isAuthenticated, isLoading, segments, isFirstTime, router]);
 

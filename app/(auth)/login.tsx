@@ -204,7 +204,7 @@ const Login = () => {
         throw new Error("Verification ID is missing.");
       }
       // Sign in with the verification code
-      const result = await confirmVerificationCode(verificationId, otpValue);
+      const result = await confirmVerificationCode(verificationId, otpValue, false); // false = don't skip sign in
       
       if (result.success) {
         // Authentication successful

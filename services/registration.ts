@@ -3,6 +3,7 @@ import { RegisterFormData } from '@/types/register';
 
 interface RegistrationData {
   name: string;
+  phoneNumber: string;
   email?: string;
   group: string;
   businessName: string;
@@ -17,6 +18,7 @@ export const registerUser = async (data: RegistrationData) => {
     // Transform the data to match the server's expected format
     const serverData = {
       name: data.name,
+      phoneNumber: data.phoneNumber,
       email: data.email,
       group: data.group,
       business: {

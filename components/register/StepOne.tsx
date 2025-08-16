@@ -5,7 +5,7 @@ import { Input, InputField, InputSlot, InputIcon } from "@/components/ui/input";
 import { FormControl, FormControlLabel, FormControlLabelText, FormControlError, FormControlErrorText } from "@/components/ui/form-control";
 import { Select, SelectTrigger, SelectInput, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem } from "@/components/ui/select";
 import { Image } from "@/components/ui/image";
-import { Pressable, ActivityIndicator } from "react-native";
+import { Pressable, ActivityIndicator, ScrollView } from "react-native";
 import { X, ChevronDown, Camera, Edit2, AlertCircle } from "lucide-react-native";
 import { Controller, Control } from "react-hook-form";
 import * as ImagePicker from 'expo-image-picker';
@@ -300,7 +300,7 @@ export default function StepOne({ control, errors }: StepOneProps) {
               </SelectTrigger>
               <SelectPortal>
                 <SelectBackdrop />
-                <SelectContent>
+                <SelectContent style={{ maxHeight: '80%' }}>
                   <SelectDragIndicatorWrapper>
                     <SelectDragIndicator />
                   </SelectDragIndicatorWrapper>
@@ -314,13 +314,15 @@ export default function StepOne({ control, errors }: StepOneProps) {
                       <Text className="text-center">No groups available</Text>
                     </Box>
                   ) : (
-                    groups.map((group) => (
-                      <SelectItem
-                        key={group._id}
-                        label={group.name}
-                        value={group._id}
-                      />
-                    ))
+                    <Box>
+                      {groups.map((group) => (
+                        <SelectItem
+                          key={group._id}
+                          label={group.name}
+                          value={group._id}
+                        />
+                      ))}
+                    </Box>
                   )}
                 </SelectContent>
               </SelectPortal>

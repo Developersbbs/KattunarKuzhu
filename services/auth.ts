@@ -32,15 +32,23 @@ export const verifyPhoneNumber = async (
 
 export const confirmVerificationCode = async (
   verificationId: string,
-  verificationCode: string
+  verificationCode: string,
+  skipSignIn: boolean = false
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const credential = PhoneAuthProvider.credential(
       verificationId,
       verificationCode
     );
-    await signInWithCredential(typedAuth, credential);
-    return { success: true };
+    
+    if (skipSignIn) {
+      // For registration, we just verify the code but don't sign in
+      return { success: true };
+    } else {
+      // For login, we sign in with the credential
+      await signInWithCredential(typedAuth, credential);
+      return { success: true };
+    }
   } catch (error: any)
   {
     console.error("Error confirming verification code:", error);

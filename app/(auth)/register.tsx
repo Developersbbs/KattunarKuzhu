@@ -150,7 +150,7 @@ export default function Register() {
 
       try {
         setIsLoading(true);
-        const result = await confirmVerificationCode(verificationId, enteredOtp);
+        const result = await confirmVerificationCode(verificationId, enteredOtp, true); // true = skipSignIn
 
         if (!result.success) {
           throw new Error(result.error || "OTP verification failed.");
@@ -159,6 +159,7 @@ export default function Register() {
         // OTP is verified, now send the rest of the data to your backend
         const registrationData = {
           name: data.name,
+          phoneNumber: `${data.countryCode}${data.phoneNumber}`,
           email: data.email,
           group: data.group,
           businessName: data.businessName,
@@ -169,14 +170,9 @@ export default function Register() {
         };
 
         await registerUser(registrationData);
-
-        showToast("success", "Registration submitted for approval");
+        
+        // Show success confirmation modal
         setShowConfirmation(true);
-
-        // Navigate to login page after a short delay
-        setTimeout(() => {
-          router.replace('/(auth)/login');
-        }, 2000);
       } catch (error: any) {
         showToast("error", error.message);
       } finally {

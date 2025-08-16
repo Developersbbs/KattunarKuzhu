@@ -34,6 +34,7 @@ import { X, ChevronDown } from "lucide-react-native";
 import {
   verifyPhoneNumber,
   confirmVerificationCode,
+  checkUserStatus,
 } from "@/services/auth";
 import { useAuth } from "@/context/AuthContext";
 import { app } from "@/services/firebase";

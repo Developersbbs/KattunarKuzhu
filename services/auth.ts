@@ -12,19 +12,30 @@ import { auth } from "./firebase";
 const typedAuth = auth as Auth;
 
 export const checkUserStatus = async (phoneNumber: string): Promise<{ isApproved: boolean; message: string }> => {
+  // Log the URL for debugging purposes
+  const url = `${api.defaults.baseURL}/users/check-status`;
+  console.log(`Attempting to connect to server at: ${url}`);
+
   try {
-    await api.post('/users/check-status', { phoneNumber });
-    return { isApproved: true, message: 'User is approved.' };
+    const response = await api.post('/users/check-status', { phoneNumber });
+    // Check for a successful response (status 200)
+    if (response.status === 200 && response.data.status === 'approved') {
+      return { isApproved: true, message: 'User is approved.' };
+    }
+    // Handle unexpected successful responses
+    return { isApproved: false, message: 'Received an unexpected server response.' };
   } catch (error: any) {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      return { isApproved: false, message: error.response.data.message };
+      // The server responded with an error (e.g., 404 Not Found, 401 Unauthorized)
+      console.error('Server responded with an error:', error.response.data);
+      return { isApproved: false, message: error.response.data.message || 'Login not authorized.' };
     } else if (error.request) {
-      // The request was made but no response was received
-      return { isApproved: false, message: 'Could not connect to the server.' };
+      // The request was made but no response was received (network error)
+      console.error('Network error: No response received from the server.');
+      return { isApproved: false, message: 'Could not connect to the server. Please check the IP address and firewall settings.' };
     } else {
-      // Something happened in setting up the request that triggered an Error
+      // Something else went wrong
+      console.error('An unexpected error occurred:', error.message);
       return { isApproved: false, message: 'An unexpected error occurred.' };
     }
   }

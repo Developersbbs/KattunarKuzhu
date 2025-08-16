@@ -4,6 +4,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import BottomNavBar from "@/components/BottomNavBar";
 import { View } from "react-native";
+import { ChevronLeft } from "lucide-react-native";
 
 export default function MainLayout() {
   const colorScheme = useColorScheme();
@@ -24,7 +25,17 @@ export default function MainLayout() {
           headerTitleStyle: {
             fontWeight: "bold",
           },
-          headerShadowVisible: false,
+          headerShadowVisible: true,
+          headerLeft: ({ canGoBack }) => {
+            if (canGoBack) {
+              return (
+                <View style={{ marginLeft: 8 }}>
+                  <ChevronLeft size={24} color={theme.text} />
+                </View>
+              );
+            }
+            return null;
+          },
           contentStyle: {
             backgroundColor: theme.background,
           },
@@ -41,28 +52,56 @@ export default function MainLayout() {
           name="meetings"
           options={{
             title: "Meetings",
-            headerShown: false, // Hide header on admin pages
+            headerShown: true,
           }}
         />
         <Stack.Screen
           name="search"
           options={{
             title: "Search",
-            headerShown: false, // Hide header on admin pages
+            headerShown: true,
           }}
         />
         <Stack.Screen
           name="referrals"
           options={{
             title: "Referrals",
-            headerShown: false, // Hide header on admin pages
+            headerShown: true,
           }}
         />
         <Stack.Screen
           name="posts"
           options={{
             title: "Posts",
-            headerShown: false, // Hide header on admin pages
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="mark-attendance"
+          options={{
+            title: "Mark Attendance",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="member-search"
+          options={{
+            title: "Member Search",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="schedule"
+          options={{
+            title: "Schedule",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="one-on-one-selfie"
+          options={{
+            title: "One-on-One",
+            headerShown: true,
           }}
         />
         <Stack.Screen

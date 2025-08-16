@@ -136,6 +136,22 @@ const Login = () => {
     try {
       // Format phone number with country code
       const formattedPhoneNumber = `${countryCode.code}${phoneNumber}`;
+
+      // First, check if the user is approved
+      const statusResult = await checkUserStatus(formattedPhoneNumber);
+
+      if (!statusResult.isApproved) {
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="error">
+              <ToastTitle>{statusResult.message}</ToastTitle>
+            </Toast>
+          ),
+        });
+        setIsLoading(false);
+        return;
+      }
       
       // Send verification code
       const result = await verifyPhoneNumber(

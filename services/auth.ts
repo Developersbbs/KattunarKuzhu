@@ -1,3 +1,4 @@
+import api from './api';
 import {
   PhoneAuthProvider,
   signInWithCredential,
@@ -9,6 +10,26 @@ import {
 import { auth } from "./firebase";
 
 const typedAuth = auth as Auth;
+
+export const checkUserStatus = async (phoneNumber: string): Promise<{ isApproved: boolean; message: string }> => {
+  try {
+    await api.post('/users/check-status', { phoneNumber });
+    return { isApproved: true, message: 'User is approved.' };
+  } catch (error: any) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      return { isApproved: false, message: error.response.data.message };
+    } else if (error.request) {
+      // The request was made but no response was received
+      return { isApproved: false, message: 'Could not connect to the server.' };
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      return { isApproved: false, message: 'An unexpected error occurred.' };
+    }
+  }
+};
+
 
 export const verifyPhoneNumber = async (
   phoneNumber: string,

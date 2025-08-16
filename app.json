@@ -69,12 +69,14 @@
             "./assets/fonts/SpaceMono-Regular.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
+      "API_BASE_URL": "http://localhost:3000",
       "router": {
         "origin": false
       },

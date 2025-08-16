@@ -13,10 +13,12 @@ import {
   verifyPhoneNumber,
   confirmVerificationCode,
 } from "../../services/auth";
+import { registerUser } from "../../services/registration";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
 import { Text } from "@/components/ui/text";
+import { app } from "../../services/firebase";
 
 // Import step components
 import Stepper from "@/components/register/Stepper";
@@ -154,8 +156,29 @@ export default function Register() {
           throw new Error(result.error || "OTP verification failed.");
         }
 
-        showToast("success", "OTP verified successfully");
+        // OTP is verified, now send the rest of the data to your backend
+        const registrationData = {
+          name: data.name,
+          email: data.email,
+          group: data.group,
+          business: {
+            name: data.businessName,
+            category: data.businessCategory,
+            phoneNumber: data.businessPhone,
+            email: data.businessEmail,
+            location: data.businessLocation,
+          },
+        };
+
+        await registerUser(registrationData);
+
+        showToast("success", "Registration submitted for approval");
         setShowConfirmation(true);
+
+        // Navigate to login page after a short delay
+        setTimeout(() => {
+          router.replace('/(auth)/login');
+        }, 2000);
       } catch (error: any) {
         showToast("error", error.message);
       } finally {
@@ -314,7 +337,7 @@ export default function Register() {
 
         <FirebaseRecaptchaVerifierModal
           ref={recaptchaVerifier}
-          firebaseConfig={{}} // Use your actual Firebase config here
+          firebaseConfig={app.options}
           attemptInvisibleVerification={true}
         />
 

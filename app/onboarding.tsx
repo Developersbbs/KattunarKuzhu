@@ -30,30 +30,26 @@ export default function OnboardingScreen() {
     }
   };
 
+  const completeOnboarding = async () => {
+    try {
+      await setItem('isFirstTime', 'false');
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Failed to complete onboarding:', error);
+      // Optionally, show an error message to the user
+    }
+  };
+
   const handleAllowNotifications = async () => {
     console.log('Notification permission allowed');
-    // Mark onboarding as completed
-    await setItem('isFirstTime', 'false');
     setIsModalVisible(false);
-    
-    // Add a small delay to ensure the secure store is updated
-    setTimeout(() => {
-      console.log('Navigating to login after notification permission');
-      router.replace('/(auth)/login');
-    }, 100);
+    await completeOnboarding();
   };
 
   const handleSkipNotifications = async () => {
     console.log('Skipping notifications');
-    // Mark onboarding as completed
-    await setItem('isFirstTime', 'false');
     setIsModalVisible(false);
-    
-    // Add a small delay to ensure the secure store is updated
-    setTimeout(() => {
-      console.log('Navigating to login after skipping notifications');
-      router.replace('/(auth)/login');
-    }, 100);
+    await completeOnboarding();
   };
 
   return (

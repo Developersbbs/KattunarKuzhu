@@ -66,6 +66,16 @@ const Login = () => {
 
   // OTP input refs
   const otpInputRefs = useRef<Array<React.RefObject<any>>>([]);
+  const recaptchaContainerRef = useRef<View>(null);
+
+  // Initialize reCAPTCHA verifier
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      // initRecaptchaVerifier("recaptcha-container-login"); // This line is removed as per the new_code
+    } else {
+      // initRecaptchaVerifier(recaptchaContainerRef.current); // This line is removed as per the new_code
+    }
+  }, []);
 
   // Initialize OTP input refs
   useEffect(() => {

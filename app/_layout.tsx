@@ -6,14 +6,20 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useColorScheme } from "@/components/useColorScheme";
-import { Slot, useRouter, useSegments } from "expo-router";
-import { getItem } from "expo-secure-store";
+import { Slot, useRouter, useSegments, useFocusEffect } from "expo-router";
+import { getItem, removeItem } from "expo-secure-store";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { LogBox } from 'react-native';
 
 import "../global.css";
+
+// Ignore specific warning
+LogBox.ignoreLogs([
+  'Warning: FirebaseRecaptcha: Support for defaultProps will be removed from function components in a future major release. Use JavaScript default parameters instead.',
+]);
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -51,30 +57,12 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkFirstTime = async () => {
-      const firstTime = await getItem("isFirstTime");
-      if (firstTime === "false") {
-        setIsFirstTime(false);
-      } else {
-        setIsFirstTime(true);
-      }
-    };
-    checkFirstTime();
-  }, []);
-
-  if (isFirstTime === null) {
-    return <></>;
-  }
 
   return (
     <AuthProvider>
-      <AuthStateListener initialIsFirstTime={isFirstTime} />
-      <GluestackUIProvider mode="light">
-        <ThemeProvider value={DefaultTheme}>
-          <Slot />
+      <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <InitialLayout />
         </ThemeProvider>
       </GluestackUIProvider>
     </AuthProvider>
@@ -82,20 +70,25 @@ function RootLayoutNav() {
 }
 
 // Auth state listener component for navigation control
-function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean | null }) {
+function InitialLayout() {
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(initialIsFirstTime);
+  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(null);
 
-  // Check if the user has completed onboarding
-  useEffect(() => {
-    const checkFirstTime = async () => {
-      const firstTime = await getItem("isFirstTime");
-      setIsFirstTime(firstTime === "false" ? false : true);
-    };
-    checkFirstTime();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const checkFirstTime = async () => {
+        if (__DEV__) {
+          // In development, uncomment the line below to reset the onboarding state on each reload
+          // await removeItem('isFirstTime');
+        }
+        const firstTime = await getItem("isFirstTime");
+        setIsFirstTime(firstTime !== "false");
+      };
+      checkFirstTime();
+    }, [])
+  );
 
   useEffect(() => {
     if (isLoading || isFirstTime === null) {
@@ -124,5 +117,5 @@ function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean
     }
   }, [isAuthenticated, isLoading, segments, isFirstTime, router]);
 
-  return null;
+  return <Slot />;
 }

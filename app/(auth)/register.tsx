@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ScrollView, Platform, View } from "react-native";
+import { ScrollView, Platform, View, KeyboardAvoidingView } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Toast, ToastTitle, useToast } from "@/components/ui/toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { RegisterFormData } from "@/types/register";
-import { initRecaptchaVerifier, sendVerificationCode, signInWithCode } from "../../services/auth";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import {
+  verifyPhoneNumber,
+  confirmVerificationCode,
+} from "../../services/auth";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
+import Gradient from "@/assets/Icons/Gradient";
+import { Text } from "@/components/ui/text";
 
 // Import step components
 import Stepper from "@/components/register/Stepper";
@@ -34,13 +42,17 @@ const registerSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
   businessCategory: z.string().min(1, "Please select a business category"),
   businessPhone: z.string().optional().or(z.literal("")),
-  businessEmail: z.string().email("Invalid email format").optional().or(z.literal("")),
+  businessEmail:
+    z.string().email("Invalid email format").optional().or(z.literal("")),
   businessLocation: z.string().min(1, "Business location is required"),
 
   // Step 3 - OTP Verification
-  otp: z.array(z.string()).length(6).refine((val) => val.every(digit => digit !== ""), {
-    message: "Please enter the complete 6-digit OTP"
-  }),
+  otp: z
+    .array(z.string())
+    .length(6)
+    .refine((val) => val.every((digit) => digit !== ""), {
+      message: "Please enter the complete 6-digit OTP",
+    }),
 });
 
 export default function Register() {
@@ -50,8 +62,11 @@ export default function Register() {
   const [isResendDisabled, setIsResendDisabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [verificationId, setVerificationId] = useState("");
-  const recaptchaContainerRef = useRef<View>(null);
+  const recaptchaVerifier = useRef(null);
   const toast = useToast();
+  const router = useRouter();
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? "light"];
 
   // Initialize form with react-hook-form
   const {
@@ -61,7 +76,7 @@ export default function Register() {
     trigger,
     formState: { errors, isValid },
     getValues,
-    watch
+    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema) as any,
     mode: "onChange",
@@ -89,17 +104,19 @@ export default function Register() {
   useEffect(() => {
     if (Platform.OS === "web") {
       try {
-        initRecaptchaVerifier("recaptcha-container-register");
+        // initRecaptchaVerifier("recaptcha-container-register"); // This line is removed
       } catch (error) {
         console.error("Error initializing reCAPTCHA:", error);
       }
+    } else {
+      // initRecaptchaVerifier(recaptchaContainerRef.current); // This line is removed
     }
   }, []);
 
   // Countdown timer for OTP resend
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (currentStep === 2 && resendTimer > 0) {
       interval = setInterval(() => {
         setResendTimer((prev) => prev - 1);
@@ -107,7 +124,7 @@ export default function Register() {
     } else if (resendTimer === 0) {
       setIsResendDisabled(false);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -118,20 +135,20 @@ export default function Register() {
     if (currentStep === steps.length - 2) {
       // If on the verification step, verify OTP and show confirmation
       const enteredOtp = data.otp.join("");
-      
+
       if (enteredOtp.length !== 6) {
         showToast("error", "Please enter the complete 6-digit OTP");
         return;
       }
-      
+
       if (!verificationId) {
         showToast("error", "Verification session expired. Please resend OTP.");
         return;
       }
-      
+
       try {
         setIsLoading(true);
-        const result = await signInWithCode(verificationId, enteredOtp);
+        const result = await confirmVerificationCode(verificationId, enteredOtp);
 
         if (!result.success) {
           throw new Error(result.error || "OTP verification failed.");
@@ -144,10 +161,10 @@ export default function Register() {
       } finally {
         setIsLoading(false);
       }
-      
+
       return;
     }
-    
+
     // Move to the next step
     setCurrentStep((prev) => prev + 1);
   };
@@ -155,23 +172,27 @@ export default function Register() {
   // Handle next button click
   const handleNext = async () => {
     let fieldsToValidate: Array<keyof RegisterFormData> = [];
-    
+
     // Define fields to validate based on current step
     switch (currentStep) {
       case 0:
         fieldsToValidate = ["name", "phoneNumber", "group"];
         break;
       case 1:
-        fieldsToValidate = ["businessName", "businessCategory", "businessLocation"];
+        fieldsToValidate = [
+          "businessName",
+          "businessCategory",
+          "businessLocation",
+        ];
         break;
       case 2:
         fieldsToValidate = ["otp"];
         break;
     }
-    
+
     // Trigger validation for the fields
     const isStepValid = await trigger(fieldsToValidate as any);
-    
+
     if (isStepValid) {
       if (currentStep === 2) {
         // If on the verification step, submit the form
@@ -179,7 +200,7 @@ export default function Register() {
       } else {
         // Otherwise, move to the next step
         setCurrentStep((prev) => prev + 1);
-        
+
         // If moving to the verification step, simulate sending OTP
         if (currentStep === 1) {
           sendOtp();
@@ -202,11 +223,7 @@ export default function Register() {
       setIsLoading(true);
       const fullPhoneNumber = `${countryCode}${phoneNumber}`;
 
-      if (Platform.OS !== "web" && recaptchaContainerRef.current) {
-        initRecaptchaVerifier(recaptchaContainerRef.current);
-      }
-
-      const result = await sendVerificationCode(fullPhoneNumber);
+      const result = await verifyPhoneNumber(fullPhoneNumber, recaptchaVerifier);
 
       if (!result.success || result.error) {
         throw new Error(result.error || "Failed to send OTP");
@@ -228,7 +245,7 @@ export default function Register() {
     try {
       setIsLoading(true);
       const fullPhoneNumber = `${countryCode}${phoneNumber}`;
-      const result = await sendVerificationCode(fullPhoneNumber);
+      const result = await verifyPhoneNumber(fullPhoneNumber, recaptchaVerifier);
 
       if (!result.success || result.error) {
         throw new Error(result.error || "Failed to resend OTP");
@@ -251,12 +268,8 @@ export default function Register() {
       placement: "top",
       render: ({ id }) => {
         return (
-          <Toast
-            nativeID={id}
-            action={type}
-            className="bg-black rounded-full"
-          >
-            <ToastTitle className="text-white">{message}</ToastTitle>
+          <Toast nativeID={id} action={type} className="rounded-full">
+            <ToastTitle>{message}</ToastTitle>
           </Toast>
         );
       },
@@ -289,75 +302,157 @@ export default function Register() {
   };
 
   return (
-    <Box className="flex-1 bg-white">
-      {/* Hidden reCAPTCHA container */}
-      <View
-        ref={Platform.OS !== 'web' ? recaptchaContainerRef : null}
-        id="recaptcha-container-register" 
-        style={{ height: 0, width: 0, opacity: 0 }} 
-      />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <Box className="flex-1 w-full h-full bg-background">
+        {/* Background Gradient */}
+        <Box className="absolute top-0 left-0 right-0 bottom-0">
+          <Gradient />
+        </Box>
 
-      {/* Header with Stepper */}
-      <Box className="pt-16 pb-4 bg-white">
-        <Stepper steps={steps} currentStep={currentStep} />
-      </Box>
+        <FirebaseRecaptchaVerifierModal
+          ref={recaptchaVerifier}
+          firebaseConfig={{}} // Use your actual Firebase config here
+          attemptInvisibleVerification={true}
+        />
 
-      {/* Form Content */}
-      <ScrollView 
-        className="flex-1 px-4" 
-        contentContainerStyle={{ 
-          paddingBottom: 100,
-          paddingTop: 20,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {renderStepContent()}
-      </ScrollView>
+        {/* Header */}
+        <Box className="pt-16 pb-4 items-center">
+          <Text className="text-3xl font-bold" style={{ color: theme.text }}>
+            Create Account
+          </Text>
+          <Text
+            className="text-base mt-1"
+            style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }}
+          >
+            Join our community of builders
+          </Text>
+        </Box>
 
-      {/* Navigation Buttons */}
-      <Box className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
-        <Box className="flex-row justify-between">
-          {currentStep > 0 ? (
-            <Button
-              className="bg-white border border-black rounded-full h-14 w-[48%]"
-              onPress={handleBack}
-            >
-              <ButtonText className="text-black font-semibold text-base">
-                Back
-              </ButtonText>
-            </Button>
-          ) : (
-            <Link href="/login" asChild>
+        {/* Bottom Sheet */}
+        <Box
+          className="flex-1 rounded-t-[32px] px-6 pt-6"
+          style={{
+            backgroundColor:
+              colorScheme === "dark" ? "rgba(30,30,30,0.9)" : "rgba(255,255,255,0.9)",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -3 },
+            shadowOpacity: 0.1,
+            shadowRadius: 5,
+            elevation: 5,
+          }}
+        >
+          {/* Stepper */}
+          <Box className="py-4">
+            <Stepper steps={steps} currentStep={currentStep} />
+          </Box>
+
+          {/* Form Content */}
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{
+              paddingBottom: 120, // Increased padding to avoid overlap
+              paddingTop: 20,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            {renderStepContent()}
+          </ScrollView>
+
+          {/* Navigation Buttons */}
+          <Box
+            className="absolute bottom-0 left-0 right-0 p-4"
+            style={{
+              backgroundColor:
+                colorScheme === "dark" ? "rgba(30,30,30,0.9)" : "rgba(255,255,255,0.9)",
+              borderTopWidth: 1,
+              borderTopColor:
+                colorScheme === "dark"
+                  ? "rgba(255,255,255,0.1)"
+                  : "rgba(0,0,0,0.1)",
+            }}
+          >
+            <Box className="flex-row justify-between">
+              {currentStep > 0 ? (
+                <Button
+                  className="rounded-full h-14 w-[48%]"
+                  style={{
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor:
+                      colorScheme === "dark" ? theme.tint : theme.text,
+                  }}
+                  onPress={handleBack}
+                >
+                  <ButtonText
+                    style={{
+                      color: colorScheme === "dark" ? theme.tint : theme.text,
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
+                  >
+                    Back
+                  </ButtonText>
+                </Button>
+              ) : (
+                <Button
+                  className="rounded-full h-14 w-[48%]"
+                  style={{
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor:
+                      colorScheme === "dark" ? theme.tint : theme.text,
+                  }}
+                  onPress={() => router.replace("/(auth)/login")}
+                >
+                  <ButtonText
+                    style={{
+                      color: colorScheme === "dark" ? theme.tint : theme.text,
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
+                  >
+                    Cancel
+                  </ButtonText>
+                </Button>
+              )}
+
               <Button
-                className="bg-white border border-black rounded-full h-14 w-[48%]"
+                className="rounded-full h-14 w-[48%]"
+                style={{
+                  backgroundColor: theme.tint,
+                }}
+                onPress={handleNext}
+                isDisabled={isLoading}
               >
-                <ButtonText className="text-black font-semibold text-base">
-                  Cancel
+                <ButtonText
+                  style={{
+                    color: colorScheme === "dark" ? "#000" : "#FFF",
+                    fontWeight: "600",
+                    fontSize: 16,
+                  }}
+                >
+                  {isLoading && currentStep === 2
+                    ? "Verifying..."
+                    : isLoading
+                    ? "Sending..."
+                    : currentStep === steps.length - 2
+                    ? "Submit"
+                    : "Next"}
                 </ButtonText>
               </Button>
-            </Link>
-          )}
-          
-          <Button
-            className="bg-black rounded-full h-14 w-[48%]"
-            onPress={handleNext}
-            isDisabled={isLoading}
-          >
-            <ButtonText className="text-white font-semibold text-base">
-              {isLoading && currentStep === 2 ? "Verifying..." :
-               isLoading ? "Sending..." :
-               currentStep === steps.length - 2 ? "Submit" : "Next"}
-            </ButtonText>
-          </Button>
+            </Box>
+          </Box>
         </Box>
-      </Box>
 
-      {/* Confirmation Modal */}
-      <StepFour 
-        isOpen={showConfirmation} 
-        onClose={() => setShowConfirmation(false)} 
-      />
-    </Box>
+        {/* Confirmation Modal */}
+        <StepFour
+          isOpen={showConfirmation}
+          onClose={() => setShowConfirmation(false)}
+        />
+      </Box>
+    </KeyboardAvoidingView>
   );
 }

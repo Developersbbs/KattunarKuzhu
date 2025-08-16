@@ -3,13 +3,13 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
-import { setItem } from 'expo-secure-store';
 import { useTheme } from '@react-navigation/native';
 import { Image } from '@/components/ui/image';
 import { ChevronRightIcon, ChevronLeftIcon } from 'lucide-react-native';
 import PagerView from 'react-native-pager-view';
 import { onboardingPages } from '@/constants/onboarding';
 import NotificationPermissionModal from '@/components/NotificationPermissionModal';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function OnboardingScreen() {
   const [page, setPage] = useState(0);
   const pagerRef = useRef<PagerView>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { completeOnboarding } = useOnboarding();
 
   const handleNext = () => {
     if (page < onboardingPages.length - 1) {
@@ -27,16 +28,6 @@ export default function OnboardingScreen() {
   const handleBack = () => {
     if (page > 0) {
       pagerRef.current?.setPage(page - 1);
-    }
-  };
-
-  const completeOnboarding = async () => {
-    try {
-      await setItem('isFirstTime', 'false');
-      router.replace('/(auth)/login');
-    } catch (error) {
-      console.error('Failed to complete onboarding:', error);
-      // Optionally, show an error message to the user
     }
   };
 

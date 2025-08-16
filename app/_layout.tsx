@@ -12,6 +12,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 import { Slot, useRouter, useSegments, useFocusEffect } from "expo-router";
 import { getItem, removeItem } from "expo-secure-store";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { OnboardingProvider, useOnboarding } from "@/context/OnboardingContext";
 import { LogBox } from 'react-native';
 
 import "../global.css";
@@ -60,38 +61,26 @@ function RootLayoutNav() {
 
   return (
     <AuthProvider>
-      <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <InitialLayout />
-        </ThemeProvider>
-      </GluestackUIProvider>
+      <OnboardingProvider>
+        <GluestackUIProvider mode={colorScheme === 'dark' ? 'dark' : 'light'}>
+          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <InitialLayout />
+          </ThemeProvider>
+        </GluestackUIProvider>
+      </OnboardingProvider>
     </AuthProvider>
   );
 }
 
 // Auth state listener component for navigation control
 function InitialLayout() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isFirstTime, completeOnboarding } = useOnboarding();
   const segments = useSegments();
   const router = useRouter();
-  const [isFirstTime, setIsFirstTime] = useState<boolean | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      const checkFirstTime = async () => {
-        if (__DEV__) {
-          // In development, uncomment the line below to reset the onboarding state on each reload
-          // await removeItem('isFirstTime');
-        }
-        const firstTime = await getItem("isFirstTime");
-        setIsFirstTime(firstTime !== "false");
-      };
-      checkFirstTime();
-    }, [])
-  );
 
   useEffect(() => {
-    if (isLoading || isFirstTime === null) {
+    if (isAuthLoading || isFirstTime === null) {
       // Still loading, don't redirect yet
       return;
     }
@@ -115,7 +104,7 @@ function InitialLayout() {
         router.replace("/(main)");
       }
     }
-  }, [isAuthenticated, isLoading, segments, isFirstTime, router]);
+  }, [isAuthenticated, isAuthLoading, segments, isFirstTime, router]);
 
   return <Slot />;
 }

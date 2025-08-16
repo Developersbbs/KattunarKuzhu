@@ -6,10 +6,11 @@ import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
 import { ScrollView, SafeAreaView, StatusBar, View, PanResponder, Animated, Dimensions, Appearance } from "react-native";
 import { Image } from "@/components/ui/image";
-import { Bell, Users, FileText, Calendar, Clock, X, Sun, Moon } from "lucide-react-native";
+import { Bell, Users, FileText, Calendar, Clock, X, Sun, Moon, Menu } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import NotificationPanel from "@/components/NotificationPanel";
+import AdminSidebar from "@/components/AdminSidebar";
 
 // Define the NotificationType
 type NotificationType = 'info' | 'success' | 'warning' | 'meeting';
@@ -35,6 +36,7 @@ export default function HomeScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Sample notifications data
   const sampleNotifications: Notification[] = [
@@ -153,6 +155,9 @@ export default function HomeScreen() {
           {/* Header */}
           <Box className="flex-1 w-full flex-row items-center justify-between py-4">
             <Box className="flex-row items-center gap-4">
+              <TouchableOpacity onPress={() => setIsSidebarOpen(true)}>
+                <Menu size={24} color={theme.text} />
+              </TouchableOpacity>
               <Box className="rounded-full">
                 <Image alt="default-user" source={require("@/assets/images/default-user.png")} className="h-16 w-16" />
               </Box>
@@ -766,6 +771,7 @@ export default function HomeScreen() {
         onNotificationPress={handleNotificationPress}
         onClearAll={handleClearAllNotifications}
       />
+      <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
     </SafeAreaView>
   );
 }

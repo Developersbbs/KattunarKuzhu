@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Input, InputField, InputSlot, InputIcon } from "@/components/ui/input";
 import { FormControl, FormControlLabel, FormControlLabelText, FormControlError, FormControlErrorText } from "@/components/ui/form-control";
 import { Select, SelectTrigger, SelectInput, SelectPortal, SelectBackdrop, SelectContent, SelectDragIndicatorWrapper, SelectDragIndicator, SelectItem } from "@/components/ui/select";
 import { Image } from "@/components/ui/image";
-import { Pressable } from "react-native";
-import { X, ChevronDown, Camera, Edit2 } from "lucide-react-native";
+import { Pressable, ActivityIndicator } from "react-native";
+import { X, ChevronDown, Camera, Edit2, AlertCircle } from "lucide-react-native";
 import { Controller, Control } from "react-hook-form";
 import * as ImagePicker from 'expo-image-picker';
 import { RegisterFormData } from "@/types/register";
+import { fetchGroups, Group } from "@/services/groups";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { Colors } from "@/constants/Colors";
 
 // Country codes for dropdown
 const countryCodes = [
@@ -20,22 +23,37 @@ const countryCodes = [
   { code: "+65", country: "Singapore" },
 ];
 
-// Sample groups for dropdown
-const groups = [
-  { id: "1", name: "Group 1" },
-  { id: "2", name: "Group 2" },
-  { id: "3", name: "Group 3" },
-  { id: "4", name: "Group 4" },
-  { id: "5", name: "Group 5" },
-];
-
 interface StepOneProps {
   control: Control<RegisterFormData>;
   errors: any;
 }
 
 export default function StepOne({ control, errors }: StepOneProps) {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? "light"];
   const [image, setImage] = useState<string | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch groups from server when component mounts
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchGroups();
+        setGroups(data);
+      } catch (err) {
+        console.error('Failed to fetch groups:', err);
+        setError('Failed to load groups. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGroups();
+  }, []);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -261,13 +279,23 @@ export default function StepOne({ control, errors }: StepOneProps) {
               selectedValue={value}
               onValueChange={onChange}
               placeholder="Select a group"
-              defaultValue="1"
               className="w-full"
             >
-              <SelectTrigger className="h-14 rounded-full bg-white border border-gray-300 flex items-center justify-between px-5">
-                <SelectInput className="h-14 rounded-full" placeholder="Select a group" placeholderTextColor="gray" />
+              <SelectTrigger 
+                className="h-14 rounded-full bg-white border border-gray-300 flex items-center justify-between px-5"
+                disabled={loading}
+              >
+                <SelectInput 
+                  className="h-14 rounded-full" 
+                  placeholder={loading ? "Loading groups..." : "Select a group"} 
+                  placeholderTextColor="gray" 
+                />
                 <SelectIcon>
-                  <ChevronDown size={20} color="black" />
+                  {loading ? (
+                    <ActivityIndicator size="small" color={colorScheme === "dark" ? "#A076F9" : theme.tint} />
+                  ) : (
+                    <ChevronDown size={20} color="black" />
+                  )}
                 </SelectIcon>
               </SelectTrigger>
               <SelectPortal>
@@ -276,13 +304,24 @@ export default function StepOne({ control, errors }: StepOneProps) {
                   <SelectDragIndicatorWrapper>
                     <SelectDragIndicator />
                   </SelectDragIndicatorWrapper>
-                  {groups.map((group) => (
-                    <SelectItem
-                      key={group.id}
-                      label={group.name}
-                      value={group.id}
-                    />
-                  ))}
+                  {error ? (
+                    <Box className="p-4 items-center">
+                      <AlertCircle size={24} color="red" />
+                      <Text className="text-center mt-2 text-red-500">{error}</Text>
+                    </Box>
+                  ) : groups.length === 0 && !loading ? (
+                    <Box className="p-4 items-center">
+                      <Text className="text-center">No groups available</Text>
+                    </Box>
+                  ) : (
+                    groups.map((group) => (
+                      <SelectItem
+                        key={group._id}
+                        label={group.name}
+                        value={group._id}
+                      />
+                    ))
+                  )}
                 </SelectContent>
               </SelectPortal>
             </Select>

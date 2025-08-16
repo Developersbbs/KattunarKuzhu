@@ -12,13 +12,13 @@ import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import {
   verifyPhoneNumber,
   confirmVerificationCode,
-} from "../../services/auth";
-import { registerUser } from "../../services/registration";
+} from "@/services/auth";
+import { registerUser } from "@/services/registration";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
 import { Text } from "@/components/ui/text";
-import { app } from "../../services/firebase";
+import { app } from "@/services/firebase";
 
 // Import step components
 import Stepper from "@/components/register/Stepper";
@@ -161,13 +161,11 @@ export default function Register() {
           name: data.name,
           email: data.email,
           group: data.group,
-          business: {
-            name: data.businessName,
-            category: data.businessCategory,
-            phoneNumber: data.businessPhone,
-            email: data.businessEmail,
-            location: data.businessLocation,
-          },
+          businessName: data.businessName,
+          businessCategory: data.businessCategory,
+          businessPhone: data.businessPhone,
+          businessEmail: data.businessEmail,
+          businessLocation: data.businessLocation
         };
 
         await registerUser(registrationData);
@@ -252,7 +250,11 @@ export default function Register() {
         throw new Error(result.error || "Failed to send OTP");
       }
 
-      setVerificationId(result.verificationId);
+      if (result.verificationId) {
+        setVerificationId(result.verificationId);
+      } else {
+        throw new Error("Failed to get verification ID");
+      }
       setResendTimer(30);
       setIsResendDisabled(true);
       showToast("success", "OTP sent successfully");
@@ -274,7 +276,11 @@ export default function Register() {
         throw new Error(result.error || "Failed to resend OTP");
       }
 
-      setVerificationId(result.verificationId);
+      if (result.verificationId) {
+        setVerificationId(result.verificationId);
+      } else {
+        throw new Error("Failed to get verification ID");
+      }
       setResendTimer(30);
       setIsResendDisabled(true);
       showToast("success", "OTP resent successfully");

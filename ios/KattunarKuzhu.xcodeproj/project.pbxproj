@@ -14,8 +14,8 @@
 		96905EF65AED1B983A6B3ABC /* libPods-KattunarKuzhu.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-KattunarKuzhu.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		65497BEAD44E4932A732B0FA /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63A48EEA2F84FBEB023639E /* noop-file.swift */; };
-		6439234984B64924A127776B /* SpaceMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4FB75D4B1C9C4F039EB0A2BB /* SpaceMono-Regular.ttf */; };
+		8F17C90964ED48718242F10B /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 976453396EFA4AA59C6A92C1 /* noop-file.swift */; };
+		D8D8C5827B684403B8FA1078 /* SpaceMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DF1DDC29DB324048A79AA72B /* SpaceMono-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,9 +32,9 @@
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-KattunarKuzhu/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		F63A48EEA2F84FBEB023639E /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "KattunarKuzhu/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
-		F716B3009FB846608605F5D2 /* KattunarKuzhu-Bridging-Header.h */ = {isa = PBXFileReference; name = "KattunarKuzhu-Bridging-Header.h"; path = "KattunarKuzhu/KattunarKuzhu-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
-		4FB75D4B1C9C4F039EB0A2BB /* SpaceMono-Regular.ttf */ = {isa = PBXFileReference; name = "SpaceMono-Regular.ttf"; path = "../assets/fonts/SpaceMono-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		976453396EFA4AA59C6A92C1 /* noop-file.swift */ = {isa = PBXFileReference; name = "noop-file.swift"; path = "KattunarKuzhu/noop-file.swift"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.swift; explicitFileType = undefined; includeInIndex = 0; };
+		FD75C5E9E6004F2E8AFD64BF /* KattunarKuzhu-Bridging-Header.h */ = {isa = PBXFileReference; name = "KattunarKuzhu-Bridging-Header.h"; path = "KattunarKuzhu/KattunarKuzhu-Bridging-Header.h"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; explicitFileType = undefined; includeInIndex = 0; };
+		DF1DDC29DB324048A79AA72B /* SpaceMono-Regular.ttf */ = {isa = PBXFileReference; name = "SpaceMono-Regular.ttf"; path = "../assets/fonts/SpaceMono-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,8 +59,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				F63A48EEA2F84FBEB023639E /* noop-file.swift */,
-				F716B3009FB846608605F5D2 /* KattunarKuzhu-Bridging-Header.h */,
+				976453396EFA4AA59C6A92C1 /* noop-file.swift */,
+				FD75C5E9E6004F2E8AFD64BF /* KattunarKuzhu-Bridging-Header.h */,
 			);
 			name = KattunarKuzhu;
 			sourceTree = "<group>";
@@ -90,7 +90,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				D7E4C46ADA2E9064B798F356 /* ExpoModulesProviders */,
-				76472F7B2F974E7CAC1949DB /* Resources */,
+				E076A84FE2FE485983156A1E /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -139,10 +139,10 @@
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
-		76472F7B2F974E7CAC1949DB /* Resources */ = {
+		E076A84FE2FE485983156A1E /* Resources */ = {
 			isa = "PBXGroup";
 			children = (
-				4FB75D4B1C9C4F039EB0A2BB /* SpaceMono-Regular.ttf */,
+				DF1DDC29DB324048A79AA72B /* SpaceMono-Regular.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -210,8 +210,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				BDA9A7A3FFD84357B730FA73 /* KattunarKuzhu-Bridging-Header.h in Resources */,
-				6439234984B64924A127776B /* SpaceMono-Regular.ttf in Resources */,
+				A5850F53552541FBB02FA67E /* KattunarKuzhu-Bridging-Header.h in Resources */,
+				D8D8C5827B684403B8FA1078 /* SpaceMono-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,7 +287,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				65497BEAD44E4932A732B0FA /* noop-file.swift in Sources */,
+				8F17C90964ED48718242F10B /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

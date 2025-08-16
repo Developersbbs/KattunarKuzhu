@@ -92,7 +92,6 @@ function AuthStateListener({ initialIsFirstTime }: { initialIsFirstTime: boolean
   useEffect(() => {
     const checkFirstTime = async () => {
       const firstTime = await getItem("isFirstTime");
-      console.log('First time check:', firstTime);
       setIsFirstTime(firstTime === "false" ? false : true);
     };
     checkFirstTime();

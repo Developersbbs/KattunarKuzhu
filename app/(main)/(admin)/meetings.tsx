@@ -18,23 +18,49 @@ import {
   ModalFooter,
 } from "@/components/ui/modal";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
+import { fetchMeetings, createMeeting } from "@/services/meetings";
 
 // Meeting types
 export type MeetingType = "general" | "special" | "training";
 export type MeetingStatus = "current" | "upcoming" | "past";
 export type RecurrenceType = "none" | "weekly" | "monthly";
 
-// Meeting interface
+// Meeting interface for client-side display
 export interface Meeting {
   id: string;
   title: string;
   type: MeetingType;
   status: MeetingStatus;
   date: string;
+  isoDate?: string; // ISO format date (YYYY-MM-DD)
   time: string;
   location: string;
   description?: string;
   attendees?: number;
+  recurrence?: RecurrenceType;
+  groupId?: string; // Added to support server integration
+}
+
+// Server response interface
+export interface ServerMeeting {
+  _id: string;
+  title: string;
+  description?: string;
+  type: MeetingType;
+  startTime: string;
+  endTime: string;
+  location: string;
+  group: {
+    _id: string;
+    name: string;
+  };
+  attendees: any[];
+  createdBy: {
+    _id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
   recurrence?: RecurrenceType;
 }
 
@@ -269,87 +295,17 @@ const AdminMeetingCard: React.FC<AdminMeetingCardProps> = ({ meeting, onPress })
   );
 };
 
-// Mock data for meetings
-const mockMeetings: Meeting[] = [
-  {
-    id: "1",
-    title: "Monthly General Meeting",
-    type: "general",
-    status: "current",
-    date: "Today, June 10, 2023",
-    time: "10:00 AM - 12:00 PM",
-    location: "Main Office, Conference Room A",
-    description: "Monthly general meeting to discuss business updates and member achievements.",
-    attendees: 24,
-    recurrence: "monthly",
-  },
-  {
-    id: "2",
-    title: "Special Training Session",
-    type: "training",
-    status: "upcoming",
-    date: "Tomorrow, June 11, 2023",
-    time: "2:00 PM - 4:00 PM",
-    location: "Training Center, Room 305",
-    description: "Special training session on effective networking strategies.",
-    attendees: 15,
-  },
-  {
-    id: "3",
-    title: "Weekly Team Standup",
-    type: "general",
-    status: "upcoming",
-    date: "June 12, 2023",
-    time: "9:00 AM - 10:00 AM",
-    location: "Main Office, Conference Room B",
-    description: "Weekly team standup meeting to discuss progress and roadblocks.",
-    attendees: 12,
-    recurrence: "weekly",
-  },
-  {
-    id: "4",
-    title: "Board Meeting",
-    type: "special",
-    status: "upcoming",
-    date: "June 15, 2023",
-    time: "9:00 AM - 11:00 AM",
-    location: "Executive Boardroom",
-    description: "Quarterly board meeting to discuss strategic initiatives.",
-    attendees: 8,
-  },
-  {
-    id: "5",
-    title: "New Member Orientation",
-    type: "training",
-    status: "past",
-    date: "June 5, 2023",
-    time: "1:00 PM - 3:00 PM",
-    location: "Main Office, Training Room B",
-    description: "Orientation session for new members joining this month.",
-    attendees: 12,
-  },
-  {
-    id: "6",
-    title: "Business Development Workshop",
-    type: "general",
-    status: "past",
-    date: "May 28, 2023",
-    time: "10:00 AM - 3:00 PM",
-    location: "Community Center, Hall 2",
-    description: "Full-day workshop on business development strategies.",
-    attendees: 30,
-  },
-];
+// No mock data - we'll fetch real data from the API
 
 export default function Meetings() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-  const [meetings, setMeetings] = useState<Meeting[]>(mockMeetings);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   
   // Form state for creating a new meeting
   const [newMeetingTitle, setNewMeetingTitle] = useState("");
@@ -369,6 +325,53 @@ export default function Meetings() {
   // Time picker state
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+  
+  // Fetch meetings from API
+  const loadMeetings = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchMeetings();
+      
+      if (data && Array.isArray(data)) {
+        console.log(`Loaded ${data.length} meetings from API`);
+        setMeetings(data);
+      } else {
+        console.warn('API returned unexpected data format:', data);
+        setMeetings([]);
+        Alert.alert('Warning', 'Received unexpected data format from server. Please contact support if this persists.');
+      }
+    } catch (error: any) {
+      console.error('Error loading meetings:', error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Server error:', error.response.status, error.response.data);
+        Alert.alert(
+          'Server Error', 
+          `Failed to load meetings (${error.response.status}). ${error.response.data?.message || 'Please try again later.'}`
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Network error - no response received');
+        Alert.alert(
+          'Network Error', 
+          'Unable to connect to the server. Please check your internet connection and try again.'
+        );
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        Alert.alert('Error', `Failed to load meetings: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load meetings on component mount
+  useEffect(() => {
+    loadMeetings();
+  }, []);
   
   // Filter meetings based on search query
   const filteredMeetings = meetings.filter((meeting) =>
@@ -448,7 +451,15 @@ export default function Meetings() {
       day: 'numeric'
     });
     
+    console.log("Selected date:", formattedDate);
+    
+    // Also store the ISO date string for easier parsing
+    const isoDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Store both formats - the formatted one for display and ISO for data
     setNewMeetingDate(formattedDate);
+    
+    console.log("Date selected:", { formatted: formattedDate, iso: isoDate });
   };
   
   // Time slots for time picker
@@ -460,7 +471,10 @@ export default function Meetings() {
   
   const selectTimeSlot = (time: string) => {
     setSelectedTimeSlot(time);
-    setNewMeetingTime(time + " - " + getEndTime(time));
+    const endTime = getEndTime(time);
+    const timeRange = `${time} - ${endTime}`;
+    console.log("Setting time range:", timeRange);
+    setNewMeetingTime(timeRange);
     setShowTimePicker(false);
   };
   
@@ -509,45 +523,109 @@ export default function Meetings() {
   );
   
   // Handle meeting creation
-  const handleCreateMeeting = () => {
-    if (!newMeetingTitle.trim() || !newMeetingDate || !newMeetingTime || !newMeetingLocation.trim()) {
-      Alert.alert("Missing Information", "Please fill in all required fields.");
+  const handleCreateMeeting = async () => {
+    // Validate required fields
+    if (!newMeetingTitle.trim()) {
+      Alert.alert("Missing Information", "Please enter a meeting title.");
+      return;
+    }
+    
+    if (!newMeetingDate) {
+      Alert.alert("Missing Information", "Please select a meeting date.");
+      return;
+    }
+    
+    if (!newMeetingTime) {
+      Alert.alert("Missing Information", "Please select a meeting time.");
+      return;
+    }
+    
+    if (!newMeetingLocation.trim()) {
+      Alert.alert("Missing Information", "Please enter a meeting location.");
       return;
     }
     
     setCreating(true);
     
-    // Simulate API call with timeout
-    setTimeout(() => {
-      const newMeeting: Meeting = {
-        id: (meetings.length + 1).toString(),
+    try {
+      // For demo purposes, we're using a fixed groupId
+      // In a real app, you would select the group or get it from context
+      const groupId = "60d21b4667d0d8992e610c85"; // Example group ID
+      
+      // Create ISO date string from selectedDate if available
+      const isoDate = selectedDate ? selectedDate.toISOString().split('T')[0] : undefined;
+      
+      const newMeetingData = {
         title: newMeetingTitle.trim(),
         type: newMeetingType,
-        status: "upcoming",
         date: newMeetingDate,
+        isoDate: isoDate, // Add ISO format date for more reliable parsing
         time: newMeetingTime,
         location: newMeetingLocation.trim(),
         description: newMeetingDescription.trim() || undefined,
-        attendees: 0,
         recurrence: newMeetingType === "general" ? newMeetingRecurrence : "none",
       };
       
-      // Add new meeting to the list
-      setMeetings([newMeeting, ...meetings]);
+      console.log("Creating meeting with data:", JSON.stringify(newMeetingData, null, 2));
       
-      // Reset form and close modal
-      setNewMeetingTitle("");
-      setNewMeetingDescription("");
-      setNewMeetingDate("");
-      setNewMeetingTime("");
-      setNewMeetingLocation("");
-      setNewMeetingType("general");
-      setIsCreateModalOpen(false);
+      try {
+        // Call the API to create the meeting
+        const createdMeeting = await createMeeting(newMeetingData, groupId);
+        
+        if (createdMeeting) {
+          // Add new meeting to the list
+          setMeetings([createdMeeting as Meeting, ...meetings]);
+          
+          // Reset form and close modal
+          setNewMeetingTitle("");
+          setNewMeetingDescription("");
+          setNewMeetingDate("");
+          setNewMeetingTime("");
+          setNewMeetingLocation("");
+          setNewMeetingType("general");
+          setNewMeetingRecurrence("none");
+          setSelectedDate(null);
+          setSelectedTimeSlot(null);
+          setIsCreateModalOpen(false);
+          
+          // Show success message
+          Alert.alert("Success", "Meeting created successfully!");
+          
+          // Refresh the meetings list to ensure we have the latest data
+          loadMeetings();
+        } else {
+          throw new Error("Failed to create meeting - no data returned");
+        }
+      } catch (apiError: any) {
+        console.error("API error creating meeting:", apiError);
+        
+        // Handle different types of errors
+        if (apiError.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Server error:', apiError.response.status, apiError.response.data);
+          Alert.alert(
+            'Server Error', 
+            `Failed to create meeting (${apiError.response.status}). ${apiError.response.data?.message || 'Please try again later.'}`
+          );
+        } else if (apiError.request) {
+          // The request was made but no response was received
+          console.error('Network error - no response received');
+          Alert.alert(
+            'Network Error', 
+            'Unable to connect to the server. Please check your internet connection and try again.'
+          );
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          Alert.alert('Error', `Failed to create meeting: ${apiError.message}`);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error creating meeting:", error);
+      Alert.alert("Error", `Failed to create meeting: ${error.message}`);
+    } finally {
       setCreating(false);
-      
-      // Show success message
-      Alert.alert("Success", "Meeting created successfully!");
-    }, 1000);
+    }
   };
   
   // Reset form when modal closes
@@ -840,7 +918,7 @@ export default function Meetings() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 100 }}
               refreshing={loading}
-              onRefresh={() => console.log("Refresh meetings")}
+              onRefresh={loadMeetings}
             />
           ) : (
             <Box className="flex-1 items-center justify-center">

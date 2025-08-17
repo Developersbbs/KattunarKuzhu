@@ -4,71 +4,17 @@ import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { Calendar as CalendarIcon, Users, UserPlus, Clock, MapPin, CheckCircle, Calendar as CalendarComponent, ChevronLeft, ChevronRight, X, ChevronDown } from "lucide-react-native";
-import { TouchableOpacity, ScrollView, Dimensions, View, Alert, Modal } from "react-native";
+import { TouchableOpacity, ScrollView, Dimensions, View, Alert, Modal, ActivityIndicator } from "react-native";
 import MeetingCard, { Meeting, MeetingType, MeetingStatus } from "@/components/MeetingCard";
 import { useRouter } from "expo-router";
 import { Button, ButtonText } from "@/components/ui/button";
+import { fetchMeetings } from "@/services/meetings";
 
 const { width } = Dimensions.get("window");
 
 type TabType = "calendar" | "meetings" | "one-on-ones";
 
-// Sample data for meetings
-const sampleMeetings: Meeting[] = [
-  {
-    id: "1",
-    title: "Weekly Business Network",
-    type: "general",
-    status: "current",
-    date: "Today, 15 Aug 2023",
-    time: "10:00 AM - 12:00 PM",
-    location: "Arulraj Builders Office, T.Nagar",
-    attendees: 24,
-    description: "Regular weekly meeting for business networking and knowledge sharing."
-  },
-  {
-    id: "2",
-    title: "Interior Decorators Roundtable",
-    type: "special",
-    status: "upcoming",
-    date: "Tomorrow, 16 Aug 2023",
-    time: "10:00 AM - 11:30 AM",
-    location: "Selvi Interiors Studio, Velachery",
-    attendees: 18,
-  },
-  {
-    id: "3",
-    title: "Digital Marketing Workshop",
-    type: "training",
-    status: "upcoming",
-    date: "18 Aug 2023",
-    time: "2:00 PM - 5:00 PM",
-    location: "Training Center, Tambaram",
-    attendees: 15,
-  },
-  {
-    id: "4",
-    title: "Monthly Review",
-    type: "general",
-    status: "past",
-    date: "01 Aug 2023",
-    time: "11:00 AM - 1:00 PM",
-    location: "Business Center, T.Nagar",
-    attendees: 22,
-    attendanceStatus: "present",
-  },
-  {
-    id: "5",
-    title: "Sales Strategy Session",
-    type: "special",
-    status: "past",
-    date: "28 Jul 2023",
-    time: "3:00 PM - 4:30 PM",
-    location: "Meeting Room 3, K.K.Nagar",
-    attendees: 12,
-    attendanceStatus: "absent",
-  }
-];
+// We'll load real meeting data from the API
 
 // Define one-on-one meeting interface
 interface OneOnOne {
@@ -82,56 +28,9 @@ interface OneOnOne {
   selfieUploaded?: boolean;
 }
 
-// Sample data for one-on-ones
-const sampleOneOnOnes: OneOnOne[] = [
-  {
-    id: "1",
-    personName: "Arulraj",
-    personCompany: "Arulraj Builders",
-    status: "pending_sent",
-  },
-  {
-    id: "2",
-    personName: "Selvi",
-    personCompany: "Selvi Interiors",
-    status: "pending_received",
-  },
-  {
-    id: "3",
-    personName: "Karthikeyan",
-    personCompany: "Karthik Painters",
-    status: "confirmed",
-    date: "Tomorrow, 16 Aug 2023",
-    time: "2:30 PM - 3:30 PM",
-    location: "Coffee Shop, T.Nagar",
-  },
-  {
-    id: "4",
-    personName: "Meenakshi",
-    personCompany: "Meenakshi Electricals",
-    status: "completed",
-    date: "05 Aug 2023",
-    time: "11:00 AM - 12:00 PM",
-    location: "Business Center, Velachery",
-    selfieUploaded: true,
-  },
-  {
-    id: "5",
-    personName: "Prakash",
-    personCompany: "Prakash Plumbing",
-    status: "declined",
-    date: "03 Aug 2023",
-  },
-  {
-    id: "6",
-    personName: "Emma Thompson",
-    personCompany: "Tech Solutions",
-    status: "in_progress",
-    date: "Today, 15 Aug 2023",
-    time: "10:00 AM - 11:00 AM",
-    location: "Meeting Room 1, T.Nagar",
-  }
-];
+// We'll load one-on-ones data from API in the future
+// For now, we'll use an empty array and prepare the structure for API integration
+const sampleOneOnOnes: OneOnOne[] = [];
 
 // Sample time slots for reschedule
 const rescheduleTimeSlots = [
@@ -155,6 +54,11 @@ export default function MeetingsScreen() {
   const [meetingsForSelectedDate, setMeetingsForSelectedDate] = useState<Meeting[]>([]);
   const router = useRouter();
   
+  // API data states
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   // States for reschedule modal
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(new Date());
@@ -163,6 +67,28 @@ export default function MeetingsScreen() {
   const [showRescheduleDatePicker, setShowRescheduleDatePicker] = useState(false);
   const [currentRescheduleMonth, setCurrentRescheduleMonth] = useState(new Date());
   
+  // Load meetings from API
+  const loadMeetings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchMeetings();
+      console.log(`Loaded ${data.length} meetings from API`);
+      setMeetings(data);
+    } catch (err) {
+      console.error('Error loading meetings:', err);
+      setError('Failed to load meetings. Please try again.');
+      Alert.alert('Error', 'Failed to load meetings. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load meetings on component mount
+  useEffect(() => {
+    loadMeetings();
+  }, []);
+
   // Generate calendar dates for current month view
   useEffect(() => {
     generateCalendarDates();
@@ -171,7 +97,7 @@ export default function MeetingsScreen() {
   // Filter meetings for selected date
   useEffect(() => {
     filterMeetingsForSelectedDate();
-  }, [selectedDate]);
+  }, [selectedDate, meetings]);
   
   const generateCalendarDates = () => {
     const year = selectedDate.getFullYear();
@@ -209,13 +135,52 @@ export default function MeetingsScreen() {
   };
   
   const filterMeetingsForSelectedDate = () => {
-    // In a real app, you would filter meetings based on the actual date
-    // For this example, we'll just use the sample data and filter based on status
-    const filteredMeetings = sampleMeetings.filter(meeting => {
-      if (meeting.status === "current") return true;
-      if (meeting.status === "upcoming" && Math.random() > 0.7) return true;
-      if (meeting.status === "past" && Math.random() > 0.8) return true;
-      return false;
+    if (!meetings.length) {
+      setMeetingsForSelectedDate([]);
+      return;
+    }
+    
+    // Filter meetings for the selected date
+    const selectedDateStr = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    const filteredMeetings = meetings.filter(meeting => {
+      // Extract date part from meeting date string
+      // This assumes meeting.date is in format like "Tuesday, August 19, 2025"
+      try {
+        // Parse the meeting date to check if it matches the selected date
+        const meetingDateParts = meeting.date.split(',');
+        if (meetingDateParts.length < 2) return false;
+        
+        const datePart = meetingDateParts[1].trim(); // "August 19"
+        const yearPart = meetingDateParts.length > 2 ? meetingDateParts[2].trim() : new Date().getFullYear().toString();
+        
+        // Parse the date parts
+        const [month, day] = datePart.split(' ');
+        const monthIndex = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ].indexOf(month);
+        
+        if (monthIndex === -1) return false;
+        
+        const dayNum = parseInt(day.replace(',', ''), 10);
+        const yearNum = parseInt(yearPart, 10);
+        
+        if (isNaN(dayNum) || isNaN(yearNum)) return false;
+        
+        // Create Date object for the meeting date
+        const meetingDate = new Date(yearNum, monthIndex, dayNum);
+        
+        // Check if the meeting date matches the selected date
+        return (
+          meetingDate.getDate() === selectedDate.getDate() &&
+          meetingDate.getMonth() === selectedDate.getMonth() &&
+          meetingDate.getFullYear() === selectedDate.getFullYear()
+        );
+      } catch (error) {
+        console.error("Error parsing meeting date:", error, meeting.date);
+        return false;
+      }
     });
     
     setMeetingsForSelectedDate(filteredMeetings);
@@ -255,9 +220,42 @@ export default function MeetingsScreen() {
   };
   
   const hasMeetings = (date: Date) => {
-    // In a real app, you would check if there are meetings on this date
-    // For this example, we'll just return a random boolean
-    return Math.random() > 0.7;
+    if (!meetings.length) return false;
+    
+    // Check if any meeting is on this date
+    return meetings.some(meeting => {
+      try {
+        // Parse the meeting date to check if it matches the given date
+        const meetingDateParts = meeting.date.split(',');
+        if (meetingDateParts.length < 2) return false;
+        
+        const datePart = meetingDateParts[1].trim(); // "August 19"
+        const yearPart = meetingDateParts.length > 2 ? meetingDateParts[2].trim() : new Date().getFullYear().toString();
+        
+        // Parse the date parts
+        const [month, day] = datePart.split(' ');
+        const monthIndex = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ].indexOf(month);
+        
+        if (monthIndex === -1) return false;
+        
+        const dayNum = parseInt(day.replace(',', ''), 10);
+        const yearNum = parseInt(yearPart, 10);
+        
+        if (isNaN(dayNum) || isNaN(yearNum)) return false;
+        
+        // Check if the meeting date matches the given date
+        return (
+          date.getDate() === dayNum &&
+          date.getMonth() === monthIndex &&
+          date.getFullYear() === yearNum
+        );
+      } catch (error) {
+        return false;
+      }
+    });
   };
   
   // Handle mark attendance
@@ -404,6 +402,32 @@ export default function MeetingsScreen() {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     
+    // Show loading state
+    if (loading) {
+      return (
+        <Box className="flex-1 p-4 items-center justify-center">
+          <ActivityIndicator size="large" color={theme.tint} />
+          <Text className="mt-4" style={{ color: theme.text }}>Loading meetings...</Text>
+        </Box>
+      );
+    }
+    
+    // Show error state
+    if (error) {
+      return (
+        <Box className="flex-1 p-4 items-center justify-center">
+          <Text className="text-red-500 mb-4">{error}</Text>
+          <Button 
+            className="px-4 py-2 rounded-lg"
+            style={{ backgroundColor: theme.tint }}
+            onPress={loadMeetings}
+          >
+            <ButtonText style={{ color: "#FFFFFF" }}>Retry</ButtonText>
+          </Button>
+        </Box>
+      );
+    }
+    
     return (
       <Box className="flex-1 p-4">
         {/* Month Navigation */}
@@ -533,10 +557,36 @@ export default function MeetingsScreen() {
 
   // Meetings Tab
   const renderMeetingsTab = () => {
+    // Show loading state
+    if (loading) {
+      return (
+        <Box className="flex-1 p-4 items-center justify-center">
+          <ActivityIndicator size="large" color={theme.tint} />
+          <Text className="mt-4" style={{ color: theme.text }}>Loading meetings...</Text>
+        </Box>
+      );
+    }
+    
+    // Show error state
+    if (error) {
+      return (
+        <Box className="flex-1 p-4 items-center justify-center">
+          <Text className="text-red-500 mb-4">{error}</Text>
+          <Button 
+            className="px-4 py-2 rounded-lg"
+            style={{ backgroundColor: theme.tint }}
+            onPress={loadMeetings}
+          >
+            <ButtonText style={{ color: "#FFFFFF" }}>Retry</ButtonText>
+          </Button>
+        </Box>
+      );
+    }
+    
     // Filter meetings by status
-    const currentMeetings = sampleMeetings.filter(meeting => meeting.status === "current");
-    const upcomingMeetings = sampleMeetings.filter(meeting => meeting.status === "upcoming");
-    const pastMeetings = sampleMeetings.filter(meeting => meeting.status === "past");
+    const currentMeetings = meetings.filter(meeting => meeting.status === "current");
+    const upcomingMeetings = meetings.filter(meeting => meeting.status === "upcoming");
+    const pastMeetings = meetings.filter(meeting => meeting.status === "past");
     
     return (
       <Box className="flex-1 p-4">
@@ -642,13 +692,27 @@ export default function MeetingsScreen() {
 
   // One-on-Ones Tab
   const renderOneOnOnesTab = () => {
+    // State for one-on-ones data (will be loaded from API in the future)
+    const [oneOnOnes, setOneOnOnes] = useState<OneOnOne[]>([]);
+    const [loadingOneOnOnes, setLoadingOneOnOnes] = useState(false);
+    
+    // Show loading state
+    if (loadingOneOnOnes) {
+      return (
+        <Box className="flex-1 p-4 items-center justify-center">
+          <ActivityIndicator size="large" color={theme.tint} />
+          <Text className="mt-4" style={{ color: theme.text }}>Loading one-on-ones...</Text>
+        </Box>
+      );
+    }
+    
     // Filter one-on-ones by status
-    const pendingSent = sampleOneOnOnes.filter(item => item.status === "pending_sent");
-    const pendingReceived = sampleOneOnOnes.filter(item => item.status === "pending_received");
-    const confirmed = sampleOneOnOnes.filter(item => item.status === "confirmed");
-    const inProgress = sampleOneOnOnes.filter(item => item.status === "in_progress");
-    const completed = sampleOneOnOnes.filter(item => item.status === "completed");
-    const declined = sampleOneOnOnes.filter(item => item.status === "declined");
+    const pendingSent = oneOnOnes.filter(item => item.status === "pending_sent");
+    const pendingReceived = oneOnOnes.filter(item => item.status === "pending_received");
+    const confirmed = oneOnOnes.filter(item => item.status === "confirmed");
+    const inProgress = oneOnOnes.filter(item => item.status === "in_progress");
+    const completed = oneOnOnes.filter(item => item.status === "completed");
+    const declined = oneOnOnes.filter(item => item.status === "declined");
     
     // Combine pending sent and received for the requests section
     const pendingRequests = [...pendingSent, ...pendingReceived];

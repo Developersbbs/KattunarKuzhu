@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from "react";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useColorScheme } from "@/components/useColorScheme";
 import { Slot, useRouter, useSegments, useFocusEffect } from "expo-router";
-import { getItem, removeItem } from "expo-secure-store";
+import { getItem } from "expo-secure-store";  
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { OnboardingProvider, useOnboarding } from "@/context/OnboardingContext";
 import { LogBox } from 'react-native';

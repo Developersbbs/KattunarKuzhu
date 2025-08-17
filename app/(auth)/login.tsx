@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import FirebaseRecaptchaWrapper from "@/components/FirebaseRecaptchaWrapper";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -287,10 +287,13 @@ const Login = () => {
           <Gradient />
         </Box>
 
-        <FirebaseRecaptchaVerifierModal
+        <FirebaseRecaptchaWrapper
           ref={recaptchaVerifier}
           firebaseConfig={app.options}
           attemptInvisibleVerification={true}
+          languageCode="en"
+          title="Verify Phone Number"
+          cancelLabel="Cancel"
         />
 
         {/* Logo Section */}

@@ -33,6 +33,16 @@ if (getApps().length === 0) {
   } else {
     auth = getAuth(app);
   }
+  
+  // Set language code for authentication
+  auth.languageCode = 'en';
+  
+  // Use reCAPTCHA v2 explicitly
+  // This is only needed for development/testing
+  if (__DEV__) {
+    // @ts-ignore - This property exists but might not be in the types
+    auth.settings.appVerificationDisabledForTesting = false;
+  }
 } else {
   app = getApp();
   auth = getAuth(app);

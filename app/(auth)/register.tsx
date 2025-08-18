@@ -12,6 +12,8 @@ import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import {
   verifyPhoneNumber,
   confirmVerificationCode,
+  getCurrentUser,
+  logOut
 } from "@/services/auth";
 import { registerUser } from "@/services/registration";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -19,6 +21,7 @@ import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
 import { Text } from "@/components/ui/text";
 import { app } from "@/services/firebase";
+import { useAuth } from "@/context/AuthContext";
 
 // Import step components
 import Stepper from "@/components/register/Stepper";
@@ -69,6 +72,7 @@ export default function Register() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
+  const { setRegistrationInProgress } = useAuth();
 
   // Initialize form with react-hook-form
   const {
@@ -150,14 +154,25 @@ export default function Register() {
 
       try {
         setIsLoading(true);
-        const result = await confirmVerificationCode(verificationId, enteredOtp, true); // true = skipSignIn
+        // Set registration in progress to prevent auto-navigation
+        setRegistrationInProgress(true);
+        
+        const result = await confirmVerificationCode(verificationId, enteredOtp);
 
         if (!result.success) {
+          setRegistrationInProgress(false); // Reset if verification fails
           throw new Error(result.error || "OTP verification failed.");
+        }
+
+        // Get the Firebase UID after authentication
+        const firebaseUser = getCurrentUser();
+        if (!firebaseUser) {
+          throw new Error("User not authenticated with Firebase");
         }
 
         // OTP is verified, now send the rest of the data to your backend
         const registrationData = {
+          firebaseUid: firebaseUser.uid, // Include Firebase UID
           name: data.name,
           phoneNumber: `${data.countryCode}${data.phoneNumber}`,
           email: data.email,
@@ -174,6 +189,7 @@ export default function Register() {
         // Show success confirmation modal
         setShowConfirmation(true);
       } catch (error: any) {
+        setRegistrationInProgress(false); // Reset registration flag
         showToast("error", error.message);
       } finally {
         setIsLoading(false);
@@ -475,7 +491,29 @@ export default function Register() {
         {/* Confirmation Modal */}
         <StepFour
           isOpen={showConfirmation}
-          onClose={() => setShowConfirmation(false)}
+          onClose={async () => {
+            try {
+              // Hide confirmation first
+              setShowConfirmation(false);
+              
+              // Sign out the user after successful registration
+              await logOut();
+              
+              // Reset the registration flag AFTER logout completes
+              setRegistrationInProgress(false);
+              
+              // Navigate to login page
+              router.replace("/(auth)/login");
+            } catch (error) {
+              console.error("Error signing out after registration:", error);
+              
+              // Reset registration flag even if there's an error
+              setRegistrationInProgress(false);
+              
+              // Still try to navigate to login
+              router.replace("/(auth)/login");
+            }
+          }}
         />
       </Box>
     </KeyboardAvoidingView>

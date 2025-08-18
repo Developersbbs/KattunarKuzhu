@@ -11,7 +11,9 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isRegistrationInProgress: boolean;
   signOut: () => Promise<boolean>;
+  setRegistrationInProgress: (inProgress: boolean) => void;
 }
 
 // Create the context with default values
@@ -19,13 +21,16 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  isRegistrationInProgress: false,
   signOut: async () => false,
+  setRegistrationInProgress: () => {},
 });
 
 // Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRegistrationInProgress, setRegistrationInProgress] = useState(false);
 
   useEffect(() => {
     // Check for existing user session on mount
@@ -71,6 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     isLoading,
     isAuthenticated: !!user,
+    isRegistrationInProgress,
+    setRegistrationInProgress,
     signOut,
   };
 

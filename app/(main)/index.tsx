@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -11,6 +11,9 @@ import { TouchableOpacity } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import NotificationPanel from "@/components/NotificationPanel";
 import AdminSidebar from "@/components/AdminSidebar";
+import { useAuth } from "@/context/AuthContext";
+import { getUserProfile, getCachedProfile, setCachedProfile } from "@/services/user";
+import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
 
 // Define the NotificationType
 type NotificationType = 'info' | 'success' | 'warning' | 'meeting';
@@ -30,6 +33,18 @@ const { width } = Dimensions.get("window");
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
+  const { user } = useAuth();
+  const toast = useToast();
+  
+  // User profile state
+  const [userProfile, setUserProfile] = useState<{
+    name: string;
+    businessName: string | null;
+  }>({
+    name: "User",
+    businessName: null
+  });
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   
   // Meeting alert state
   const [showMeetingAlert, setShowMeetingAlert] = useState(true);
@@ -37,6 +52,49 @@ export default function HomeScreen() {
   const scale = useRef(new Animated.Value(1)).current;
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        // Check if we have a cached profile first
+        const cachedProfile = getCachedProfile();
+        if (cachedProfile) {
+          setUserProfile({
+            name: cachedProfile.name,
+            businessName: cachedProfile.business?.name || null
+          });
+          setIsLoadingProfile(false);
+          return;
+        }
+        
+        // Fetch from API if not cached
+        const profile = await getUserProfile();
+        setUserProfile({
+          name: profile.name,
+          businessName: profile.business?.name || null
+        });
+        // Cache the profile for future use
+        setCachedProfile(profile);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => (
+            <Toast nativeID={id} variant="solid" action="error">
+              <ToastTitle>Failed to load profile</ToastTitle>
+            </Toast>
+          ),
+        });
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
   
   // Sample notifications data
   const sampleNotifications: Notification[] = [
@@ -162,10 +220,23 @@ export default function HomeScreen() {
                 <Image alt="default-user" source={require("@/assets/images/default-user.png")} className="h-16 w-16" />
               </Box>
               <Box>
-                <Text className="text-2xl font-bold" style={{ color: theme.text }}>
-                  Arjunan
-                </Text>
-                <Text className="text-sm font-medium" style={{ color: theme.text }}>Sanguine Blue Business Solutions</Text>
+                {isLoadingProfile ? (
+                  <Box>
+                    <Box className="h-8 w-32 mb-2 rounded-md bg-gray-300" style={{ opacity: 0.5 }} />
+                    <Box className="h-4 w-48 rounded-md bg-gray-300" style={{ opacity: 0.5 }} />
+                  </Box>
+                ) : (
+                  <>
+                    <Text className="text-2xl font-bold" style={{ color: theme.text }}>
+                      {userProfile.name}
+                    </Text>
+                    {userProfile.businessName && (
+                      <Text className="text-sm font-medium" style={{ color: theme.text }}>
+                        {userProfile.businessName}
+                      </Text>
+                    )}
+                  </>
+                )}
               </Box>
             </Box>
             <Box className="flex-row items-center gap-4">

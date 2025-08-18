@@ -82,7 +82,7 @@ function RootLayoutNav() {
 
 // Auth state listener component for navigation control
 function InitialLayout() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, isRegistrationInProgress } = useAuth();
   const { isFirstTime, completeOnboarding } = useOnboarding();
   const segments = useSegments();
   const router = useRouter();
@@ -90,6 +90,12 @@ function InitialLayout() {
   useEffect(() => {
     if (isAuthLoading || isFirstTime === null) {
       // Still loading, don't redirect yet
+      return;
+    }
+
+    // Skip navigation if registration is in progress
+    if (isRegistrationInProgress) {
+      console.log("Registration in progress, skipping navigation");
       return;
     }
 
@@ -112,7 +118,7 @@ function InitialLayout() {
         router.replace("/(main)");
       }
     }
-  }, [isAuthenticated, isAuthLoading, segments, isFirstTime, router]);
+  }, [isAuthenticated, isAuthLoading, segments, isFirstTime, router, isRegistrationInProgress]);
 
   return <Slot />;
 }

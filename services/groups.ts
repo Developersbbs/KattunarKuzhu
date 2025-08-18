@@ -18,10 +18,24 @@ export interface CreateGroupDto {
 
 export const fetchGroups = async (): Promise<Group[]> => {
   try {
+    console.log('Fetching groups from API');
     const response = await api.get('/groups');
     return response.data;
-  } catch (error) {
-    console.error('Error fetching groups:', error);
+  } catch (error: any) {
+    // Detailed error handling
+    if (error.code === 'ECONNABORTED') {
+      console.error('Connection timed out when fetching groups');
+    } else if (error.response) {
+      // The server responded with a status code outside the 2xx range
+      console.error('Server error when fetching groups:', error.response.status, error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Network error when fetching groups - no response received');
+    } else {
+      // Something happened in setting up the request
+      console.error('Error setting up request to fetch groups:', error.message);
+    }
+    
     throw error;
   }
 };

@@ -4,7 +4,7 @@ import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import Gradient from "@/assets/Icons/Gradient";
-import { ScrollView, SafeAreaView, StatusBar, View, PanResponder, Animated, Dimensions, Appearance } from "react-native";
+import { ScrollView, SafeAreaView, StatusBar, View, PanResponder, Animated, Dimensions, Appearance, Pressable } from "react-native";
 import { Image } from "@/components/ui/image";
 import { Bell, Users, FileText, Calendar, Clock, X, Sun, Moon, Menu } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
@@ -14,6 +14,7 @@ import AdminSidebar from "@/components/AdminSidebar";
 import { useAuth } from "@/context/AuthContext";
 import { getUserProfile, getCachedProfile, setCachedProfile } from "@/services/user";
 import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
+import { router } from "expo-router";
 
 // Define the NotificationType
 type NotificationType = 'info' | 'success' | 'warning' | 'meeting';
@@ -219,7 +220,7 @@ export default function HomeScreen() {
               <Box className="rounded-full">
                 <Image alt="default-user" source={require("@/assets/images/default-user.png")} className="h-16 w-16" />
               </Box>
-              <Box>
+              <Pressable onPress={() => router.push("/profile")}>
                 {isLoadingProfile ? (
                   <Box>
                     <Box className="h-8 w-32 mb-2 rounded-md bg-gray-300" style={{ opacity: 0.5 }} />
@@ -237,7 +238,7 @@ export default function HomeScreen() {
                     )}
                   </>
                 )}
-              </Box>
+              </Pressable>
             </Box>
             <Box className="flex-row items-center gap-4">
               <TouchableOpacity onPress={() => setShowNotificationPanel(true)}>

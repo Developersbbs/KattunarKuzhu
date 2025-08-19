@@ -18,6 +18,7 @@ export interface BusinessSearchResult {
     _id: string;
     name: string;
     profileImageUrl?: string;
+    firebaseUid: string;
   };
   // Add other relevant business properties
 }

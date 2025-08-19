@@ -157,7 +157,7 @@ export default function SearchScreen() {
   };
 
   const renderResultCard = ({ item }: { item: BusinessSearchResult }) => (
-    <Link href={`/(main)/profile/${item.owner?._id}`} asChild>
+    <Link href={`/(main)/profile/${item.owner?.firebaseUid}`} asChild>
       <TouchableOpacity activeOpacity={0.8}>
         <Box 
           className="mb-4 mx-4 p-4 rounded-2xl"

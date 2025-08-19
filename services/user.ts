@@ -102,6 +102,22 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 };
 
 /**
+ * Gets a user's profile by their Firebase UID
+ * @param firebaseUid The Firebase UID of the user to fetch
+ * @returns User profile
+ */
+export const getUserProfileById = async (firebaseUid: string): Promise<UserProfile> => {
+  try {
+    const response = await api.get(`/users/profile/${firebaseUid}`);
+    // We don't cache profiles of other users
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching user profile for UID ${firebaseUid}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Updates the user profile via API
  * @param profileData The profile data to update
  * @returns Updated user profile

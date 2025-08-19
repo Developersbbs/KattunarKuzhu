@@ -3,7 +3,7 @@ import { getCurrentUser } from './auth';
 import { User } from 'firebase/auth';
 
 // Interface for the user profile response
-interface UserProfile {
+export interface UserProfile {
   name: string;
   email?: string;
   phoneNumber: string;
@@ -11,7 +11,34 @@ interface UserProfile {
     name: string;
     category: string;
     address: string;
+    phoneNumber?: string;
+    email?: string;
+    website?: string;
+    description?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
   } | null;
+}
+
+// Interface for updating user profile
+export interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  business?: {
+    name?: string;
+    category?: string;
+    address?: string;
+    phoneNumber?: string;
+    email?: string;
+    website?: string;
+    description?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
 }
 
 /**
@@ -62,6 +89,50 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     if (cached) {
       console.log('Returning cached user profile data');
       return cached;
+    }
+    
+    throw error;
+  }
+};
+
+/**
+ * Updates the user profile via API
+ * @param profileData The profile data to update
+ * @returns Updated user profile
+ */
+export const updateUserProfile = async (profileData: UpdateProfileData): Promise<UserProfile> => {
+  try {
+    const firebaseUser = getCurrentUser();
+    
+    if (!firebaseUser) {
+      throw new Error('Not authenticated');
+    }
+    
+    console.log('Updating user profile with Firebase UID:', firebaseUser.uid);
+    console.log('Update data:', profileData);
+    
+    // API interceptor will automatically add the auth headers
+    const response = await api.patch('/users/profile', profileData, {
+      headers: {
+        'firebase-uid': firebaseUser.uid
+      }
+    });
+    
+    // Update cached profile
+    setCachedProfile(response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating user profile:', error);
+    
+    if (error.response) {
+      // The server responded with an error status
+      console.error('Server error response:', error.response.status, error.response.data);
+      throw new Error(error.response.data.message || 'Failed to update profile');
+    } else if (error.request) {
+      // The request was made but no response received
+      console.error('No response received:', error.request);
+      throw new Error('No response received from server');
     }
     
     throw error;

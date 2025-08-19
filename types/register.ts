@@ -3,6 +3,17 @@
  */
 
 /**
+ * Location data structure with coordinates
+ */
+export interface LocationData {
+  address: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+/**
  * Registration form data structure
  */
 export interface RegisterFormData {
@@ -20,6 +31,7 @@ export interface RegisterFormData {
   businessPhone?: string;
   businessEmail?: string;
   businessLocation: string;
+  businessLocationData?: LocationData; // Extended location data with coordinates
 
   // Step 3 - OTP Verification
   otp: string[];

@@ -39,7 +39,9 @@ import {
   Linkedin,
   Facebook,
   Twitter,
+  Pencil,
 } from "lucide-react-native";
+import { router } from "expo-router";
 
 // Define TypeScript interfaces
 interface Member {
@@ -208,26 +210,40 @@ const handleOpenSocialLink = (url: string) => {
 const ProfileCard = ({
   member,
   business,
+  showEditButton = false,
 }: {
   member: Member;
   business: Business;
+  showEditButton?: boolean;
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
   const { width: screenWidth } = Dimensions.get("window");
 
   return (
-    <Box className="w-full h-[260px] my-4 bg-white rounded-3xl">
+    <Box className="w-full h-[360px] my-4 bg-white rounded-3xl">
         <Box className="w-full h-3/6 rounded-t-3xl overflow-hidden">
             <Image source={{ uri: business.coverImage }} className="w-full h-full" />
         </Box>
         <Box className="w-full">
-            <Box className="rounded-full p-2 absolute -top-16 left-1/3">
+            <Box className="rounded-full p-2 absolute -top-16 left-1/3 drop-shadow-2xl">
                 <Image source={{uri: business.logo}} className="w-28 h-28 rounded-full" />
             </Box>
             <Box className="w-full flex flex-col items-center justify-center mt-12">
                 <Text className="text-3xl font-bold text-center">{business.member.name}</Text>
                 <Text className="text-lg text-center mt-2">{business.member.phone}</Text>
+                
+                {showEditButton && (
+                  <Pressable 
+                    className="mt-4 bg-violet-600 py-2 px-6 rounded-full flex flex-row items-center"
+                    onPress={() => router.push('/edit-profile')}
+                  >
+                    <Box className="flex flex-row items-center space-x-2">
+                      <Pencil size={16} color="#FFFFFF" />
+                      <Text className="text-white font-semibold">Edit Profile</Text>
+                    </Box>
+                  </Pressable>
+                )}
             </Box>
         </Box>
     </Box>
@@ -817,7 +833,7 @@ export default function Profile() {
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 16 }}
     >
-      <ProfileCard member={business.member} business={business} />
+      <ProfileCard member={business.member} business={business} showEditButton={true} />
       <BusinessHighlight business={business} />
       <QuickStats stats={business.stats} />
       <CategoryChips categories={business.categories} />

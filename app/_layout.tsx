@@ -1,3 +1,6 @@
+// Import the polyfill at the very top of the file
+import 'react-native-get-random-values';
+
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
   DarkTheme,
@@ -20,6 +23,8 @@ import "../global.css";
 // Ignore specific warning
 LogBox.ignoreLogs([
   'Warning: FirebaseRecaptcha: Support for defaultProps will be removed from function components in a future major release. Use JavaScript default parameters instead.',
+  // Ignore crypto getRandomValues warning if it still appears
+  'Warning: Error: crypto.getRandomValues() not supported.'
 ]);
 
 export {

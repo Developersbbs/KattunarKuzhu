@@ -7,6 +7,7 @@ export interface UserProfile {
   name: string;
   email?: string;
   phoneNumber: string;
+  profileImageUrl?: string;
   business: {
     name: string;
     category: string;
@@ -15,6 +16,8 @@ export interface UserProfile {
     email?: string;
     website?: string;
     description?: string;
+    logoUrl?: string;
+    coverImageUrl?: string;
     coordinates?: {
       latitude: number;
       longitude: number;
@@ -26,6 +29,7 @@ export interface UserProfile {
 export interface UpdateProfileData {
   name?: string;
   email?: string;
+  profileImageUrl?: string;
   business?: {
     name?: string;
     category?: string;
@@ -34,6 +38,8 @@ export interface UpdateProfileData {
     email?: string;
     website?: string;
     description?: string;
+    logoUrl?: string;
+    coverImageUrl?: string;
     coordinates?: {
       latitude: number;
       longitude: number;
@@ -101,6 +107,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
  * @returns Updated user profile
  */
 export const updateUserProfile = async (profileData: UpdateProfileData): Promise<UserProfile> => {
+  console.log('--- Initiating Profile Update ---');
   try {
     const firebaseUser = getCurrentUser();
     
@@ -108,8 +115,8 @@ export const updateUserProfile = async (profileData: UpdateProfileData): Promise
       throw new Error('Not authenticated');
     }
     
-    console.log('Updating user profile with Firebase UID:', firebaseUser.uid);
-    console.log('Update data:', profileData);
+    console.log(`[Service] Preparing to update profile for Firebase UID: ${firebaseUser.uid}`);
+    console.log('[Service] Payload to be sent:', JSON.stringify(profileData, null, 2));
     
     // API interceptor will automatically add the auth headers
     const response = await api.patch('/users/profile', profileData, {
@@ -117,6 +124,9 @@ export const updateUserProfile = async (profileData: UpdateProfileData): Promise
         'firebase-uid': firebaseUser.uid
       }
     });
+
+    console.log('[Service] API call successful. Response status:', response.status);
+    console.log('[Service] Response data:', JSON.stringify(response.data, null, 2));
     
     // Update cached profile
     setCachedProfile(response.data);

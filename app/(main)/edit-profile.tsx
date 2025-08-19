@@ -62,6 +62,9 @@ export default function EditProfileScreen() {
     businessEmail: "",
     businessWebsite: "",
     businessDescription: "",
+    profileImageUrl: "",
+    logoUrl: "",
+    coverImageUrl: "",
   });
   
   // Form validation errors
@@ -107,6 +110,7 @@ export default function EditProfileScreen() {
         setFormData({
           name: profile.name || "",
           email: profile.email || "",
+          profileImageUrl: profile.profileImageUrl || "",
           businessName: profile.business?.name || "",
           businessCategory: profile.business?.category || "",
           businessAddress: profile.business?.address || "",
@@ -122,12 +126,14 @@ export default function EditProfileScreen() {
           businessEmail: profile.business?.email || profile.email || "",
           businessWebsite: profile.business?.website || "",
           businessDescription: profile.business?.description || "",
+          logoUrl: profile.business?.logoUrl || "",
+          coverImageUrl: profile.business?.coverImageUrl || "",
         });
         
-        // Set default images
-        setProfileImage("https://placekitten.com/300/300");
-        setCoverImage("https://marketplace.canva.com/EAECJXaRRew/3/0/1600w/canva-do-what-is-right-starry-sky-facebook-cover-4SpKW5MtQl4.jpg");
-        setBusinessLogo("https://img.freepik.com/free-vector/quill-pen-logo-template_23-2149852429.jpg?semt=ais_hybrid&w=740&q=80");
+        // Set default images from fetched URLs or placeholders
+        setProfileImage(profile.profileImageUrl || "https://placekitten.com/300/300");
+        setCoverImage(profile.business?.coverImageUrl || "https://marketplace.canva.com/EAECJXaRRew/3/0/1600w/canva-do-what-is-right-starry-sky-facebook-cover-4SpKW5MtQl4.jpg");
+        setBusinessLogo(profile.business?.logoUrl || "https://img.freepik.com/free-vector/quill-pen-logo-template_23-2149852429.jpg?semt=ais_hybrid&w=740&q=80");
       } catch (error) {
         console.error("Failed to load profile:", error);
         toast.show({
@@ -165,6 +171,22 @@ export default function EditProfileScreen() {
     }
   };
 
+  // Simulate uploading an image and return a mock URL
+  const uploadImage = async (uri: string): Promise<string> => {
+    console.log(`Simulating upload for image: ${uri}`);
+    // In a real app, you would upload to a service like Firebase Storage or S3
+    // For this demo, we'll just return a placeholder URL after a short delay
+    return new Promise(resolve => {
+      setTimeout(() => {
+        // Create a dynamic placeholder URL to show a different image
+        const randomId = Math.floor(Math.random() * 1000);
+        const mockUrl = `https://placekitten.com/400/${400 + randomId}`;
+        console.log(`"Upload" complete. Mock URL: ${mockUrl}`);
+        resolve(mockUrl);
+      }, 1500); // Simulate 1.5 second upload time
+    });
+  };
+
   // Handle profile image selection
   const handlePickProfileImage = async (): Promise<void> => {
     try {
@@ -193,7 +215,9 @@ export default function EditProfileScreen() {
       });
       
       if (!result.canceled && result.assets && result.assets[0]) {
-        setProfileImage(result.assets[0].uri);
+        setProfileImage(result.assets[0].uri); // Show local image immediately
+        const uploadedUrl = await uploadImage(result.assets[0].uri);
+        handleChange("profileImageUrl", uploadedUrl); // Save the uploaded URL to form state
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -228,7 +252,9 @@ export default function EditProfileScreen() {
       });
       
       if (!result.canceled && result.assets && result.assets[0]) {
-        setBusinessLogo(result.assets[0].uri);
+        setBusinessLogo(result.assets[0].uri); // Show local image immediately
+        const uploadedUrl = await uploadImage(result.assets[0].uri);
+        handleChange("logoUrl", uploadedUrl); // Save the uploaded URL to form state
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -263,7 +289,9 @@ export default function EditProfileScreen() {
       });
       
       if (!result.canceled && result.assets && result.assets[0]) {
-        setCoverImage(result.assets[0].uri);
+        setCoverImage(result.assets[0].uri); // Show local image immediately
+        const uploadedUrl = await uploadImage(result.assets[0].uri);
+        handleChange("coverImageUrl", uploadedUrl); // Save the uploaded URL to form state
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -367,6 +395,7 @@ export default function EditProfileScreen() {
       const updateData: UpdateProfileData = {
         name: formData.name !== originalData?.name ? formData.name : undefined,
         email: formData.email !== originalData?.email ? formData.email : undefined,
+        profileImageUrl: formData.profileImageUrl !== originalData?.profileImageUrl ? formData.profileImageUrl : undefined,
       };
       
       // Check if any business fields changed
@@ -378,6 +407,8 @@ export default function EditProfileScreen() {
         formData.businessEmail !== originalData?.business?.email ||
         formData.businessWebsite !== originalData?.business?.website ||
         formData.businessDescription !== originalData?.business?.description ||
+        formData.logoUrl !== originalData?.business?.logoUrl ||
+        formData.coverImageUrl !== originalData?.business?.coverImageUrl ||
         JSON.stringify(formData.businessLocation.coordinates) !== JSON.stringify(originalData?.business?.coordinates)
       );
       
@@ -391,14 +422,36 @@ export default function EditProfileScreen() {
           email: formData.businessEmail || undefined,
           website: formData.businessWebsite || undefined,
           description: formData.businessDescription || undefined,
+          logoUrl: formData.logoUrl || undefined,
+          coverImageUrl: formData.coverImageUrl || undefined,
         };
+      }
+      
+      // Check if there is anything to update
+      const hasUserChanges = Object.values(updateData).some(v => v !== undefined && typeof v !== 'object');
+      const hasBusinessChanges = updateData.business && Object.values(updateData.business).some(v => v !== undefined);
+
+      if (!hasUserChanges && !hasBusinessChanges) {
+        toast.show({
+          placement: "top",
+          render: ({ id }: { id: string }) => {
+            return (
+              <Toast nativeID={id} action="info" variant="solid">
+                <ToastTitle>No Changes</ToastTitle>
+                <ToastDescription>There are no changes to save.</ToastDescription>
+              </Toast>
+            );
+          },
+        });
+        setIsSaving(false);
+        return;
       }
       
       console.log('Submitting profile update:', updateData);
       
       // Call the API to update the profile
       const updatedProfile = await updateUserProfile(updateData);
-      console.log('Profile updated successfully:', updatedProfile);
+      console.log('✅ Profile update API call successful. Received updated profile:', updatedProfile);
       
       // Update the original data to reflect changes
       setOriginalData(updatedProfile);

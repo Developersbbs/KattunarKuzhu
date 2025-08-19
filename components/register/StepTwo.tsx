@@ -26,9 +26,11 @@ const businessCategories = [
 interface StepTwoProps {
   control: Control<RegisterFormData>;
   errors: any;
+  setValue: (name: keyof RegisterFormData, value: any) => void;
 }
 
-export default function StepTwo({ control, errors }: StepTwoProps) {
+export default function StepTwo({ control, errors, setValue }: StepTwoProps) {
+  
   // SelectIcon component
   const SelectIcon = ({ children }: { children: React.ReactNode }) => (
     <Box className="ml-2">{children}</Box>
@@ -210,25 +212,25 @@ export default function StepTwo({ control, errors }: StepTwoProps) {
         <Controller
           control={control}
           name="businessLocation"
-          render={({ field: { onChange, value } }) => (
-            <LocationSearchInput
-              initialAddress={value}
-              onLocationSelect={(location) => {
-                // Store the address in the original field for backward compatibility
-                onChange(location.address);
-                
-                // Also store the full location data with coordinates
-                if (control.getValues) {
-                  const currentValues = control.getValues();
-                  control.setValue('businessLocationData', location as LocationData);
-                }
-              }}
-              placeholder="Search for your business location"
-              backgroundColor="white"
-              textColor="black"
-              iconColor="#666"
-            />
-          )}
+          render={({ field: { onChange, value } }) => {
+            return (
+              <LocationSearchInput
+                initialAddress={value}
+                onLocationSelect={(location) => {
+                  
+                  // Store the address in the original field for backward compatibility
+                  onChange(location.address);
+                  
+                  // Also store the full location data with coordinates
+                  setValue('businessLocationData', location as LocationData);
+                }}
+                placeholder="Search for your business location"
+                backgroundColor="white"
+                textColor="black"
+                iconColor="#666"
+              />
+            );
+          }}
         />
         {errors.businessLocation && (
           <FormControlError>

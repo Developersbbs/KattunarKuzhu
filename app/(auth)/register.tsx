@@ -323,7 +323,7 @@ export default function Register() {
       case 0:
         return <StepOne control={control} errors={errors} />;
       case 1:
-        return <StepTwo control={control} errors={errors} />;
+        return <StepTwo control={control} errors={errors} setValue={setValue} />;
       case 2:
         return (
           <StepThree

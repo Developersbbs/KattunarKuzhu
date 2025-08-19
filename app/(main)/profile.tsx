@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import {
@@ -7,7 +7,12 @@ import {
   Platform,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
+import { getUserProfile } from "@/services/user";
+import { useAuth } from "@/context/AuthContext";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast, Toast, ToastTitle, ToastDescription } from "@/components/ui/toast";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
 import { Image } from "@/components/ui/image";
@@ -641,7 +646,170 @@ const LocationMapPreview = ({
 export default function Profile() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? "light"];
-  const business = mockBusiness; // In a real app, this would be fetched from an API
+  const { user } = useAuth();
+  const toast = useToast();
+  
+  // State for business profile data
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch user profile on mount
+  useEffect(() => {
+    async function fetchUserProfile() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch user profile data from API
+        const userProfile = await getUserProfile();
+        console.log('Fetched user profile:', userProfile);
+        
+        // Map API response to Business interface
+        const mappedBusiness: Business = {
+          id: userProfile.business?.name ? 'b-' + Date.now() : 'unknown',
+          name: userProfile.business?.name || userProfile.name + "'s Business",
+          logo: "https://img.freepik.com/free-vector/quill-pen-logo-template_23-2149852429.jpg?semt=ais_hybrid&w=740&q=80", // Default logo
+          coverImage: "https://marketplace.canva.com/EAECJXaRRew/3/0/1600w/canva-do-what-is-right-starry-sky-facebook-cover-4SpKW5MtQl4.jpg", // Default cover
+          description: userProfile.business ? `${userProfile.business.name} specializes in ${userProfile.business.category}` : 'No business description available.',
+          completionPercentage: userProfile.business ? 85 : 30, // Mock completion percentage
+          categories: userProfile.business?.category ? [userProfile.business.category] : ['General'],
+          services: [], // We'll populate this if available in the API response
+          stats: {
+            meetings: 0, // These would be fetched from separate API endpoints
+            referrals: 0,
+            requirements: 0,
+          },
+          contact: {
+            phone: userProfile.phoneNumber,
+            email: userProfile.email || '',
+            website: '',
+          },
+          socialLinks: [], // We'll populate this if available in the API response
+          location: {
+            address: userProfile.business?.address || 'No address specified',
+            coordinates: {
+              latitude: 37.7749,
+              longitude: -122.4194,
+            },
+          },
+          member: {
+            id: 'u-' + Date.now().toString(),
+            name: userProfile.name,
+            phone: userProfile.phoneNumber,
+            email: userProfile.email || '',
+            avatar: "https://placekitten.com/300/300", // Default avatar
+          },
+        };
+        
+        // Add default social links for now
+        mappedBusiness.socialLinks = [
+          {
+            platform: "LinkedIn",
+            url: "https://linkedin.com/",
+            icon: <Linkedin size={20} />,
+          },
+          {
+            platform: "Instagram",
+            url: "https://instagram.com/",
+            icon: <Instagram size={20} />,
+          },
+          {
+            platform: "Facebook",
+            url: "https://facebook.com/",
+            icon: <Facebook size={20} />,
+          },
+          {
+            platform: "Twitter",
+            url: "https://twitter.com/",
+            icon: <Twitter size={20} />,
+          },
+        ];
+        
+        // Add default services if none exist
+        if (!mappedBusiness.services || mappedBusiness.services.length === 0) {
+          mappedBusiness.services = [
+            {
+              id: "s1",
+              title: userProfile.business?.name || "Services",
+              tagline: "Your business services will appear here",
+              thumbnail: "https://placekitten.com/120/120",
+            },
+          ];
+        }
+        
+        setBusiness(mappedBusiness);
+      } catch (err: any) {
+        console.error('Error fetching profile:', err);
+        setError('Failed to load profile data. ' + (err.message || ''));
+        toast.show({
+          placement: "top",
+          render: ({ id }) => {
+            return (
+              <Toast nativeID={id} action="error" variant="solid">
+                <ToastTitle>Failed to load profile</ToastTitle>
+                <ToastDescription>{err.message || 'Please check your connection'}</ToastDescription>
+              </Toast>
+            );
+          },
+        });
+        
+        // Fall back to mock data when API fails
+        setBusiness(mockBusiness);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchUserProfile();
+  }, [user?.uid]);
+  
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Box 
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.background,
+        }}
+      >
+        <Spinner size="large" color={theme.tint} />
+        <Text style={{ color: theme.text, marginTop: 16 }}>Loading your profile...</Text>
+      </Box>
+    );
+  }
+  
+  // Show error state (with mock data fallback)
+  if (error && !business) {
+    return (
+      <Box 
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+          backgroundColor: theme.background,
+        }}
+      >
+        <Text style={{ color: theme.text, fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>Unable to load profile</Text>
+        <Text style={{ color: theme.text, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <Button onPress={() => window.location.reload()} style={{ backgroundColor: theme.tint }}>
+          <ButtonText>Try Again</ButtonText>
+        </Button>
+      </Box>
+    );
+  }
+
+  // If business is null (shouldn't happen with our fallbacks, but just in case)
+  if (!business) {
+    return (
+      <Box style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+        <Text style={{ color: theme.text }}>No profile data available</Text>
+      </Box>
+    );
+  }
 
   return (
     <ScrollView

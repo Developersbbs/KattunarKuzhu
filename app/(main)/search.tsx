@@ -3,10 +3,14 @@ import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Colors } from "@/constants/Colors";
-import { Search, Info, Building2, MapPin, X, User, Briefcase } from "lucide-react-native";
+import { Search, Info, Building2, MapPin, X, User, Briefcase, ChevronRight } from "lucide-react-native";
 import { TextInput, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Keyboard } from "react-native";
 import { searchBusinesses, BusinessSearchResult } from "@/services/search";
 import { useDebounce } from "@/hooks/useDebounce";
+import { Avatar, AvatarFallbackText, AvatarImage } from "@/components/ui/avatar";
+import { Image } from "@/components/ui/image";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Link } from "expo-router";
 
 // Sample data for categories (can be fetched from API in the future)
 const popularCategories = [
@@ -153,35 +157,66 @@ export default function SearchScreen() {
   };
 
   const renderResultCard = ({ item }: { item: BusinessSearchResult }) => (
-    <Box 
-      className="p-4 mb-3 mx-4 rounded-xl"
-      style={{ 
-        backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "rgba(255, 255, 255, 0.9)",
-        borderWidth: 1,
-        borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
-       }}
-    >
-      <Text className="text-lg font-bold" style={{ color: theme.text }}>{item.name}</Text>
-      {item.owner && (
-        <Box className="flex-row items-center mt-1">
-          <User size={14} color={theme.tint} />
-          <Text className="ml-2 text-sm" style={{ color: theme.text }}>{item.owner.name}</Text>
+    <Link href={`/(main)/profile/${item.owner?._id}`} asChild>
+      <TouchableOpacity activeOpacity={0.8}>
+        <Box 
+          className="mb-4 mx-4 p-4 rounded-2xl"
+          style={{ 
+            backgroundColor: colorScheme === "dark" ? "rgba(42, 42, 42, 0.8)" : "#fff",
+            borderWidth: 1,
+            borderColor: colorScheme === "dark" ? "rgba(80, 80, 80, 0.3)" : "rgba(0, 0, 0, 0.05)",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: colorScheme === 'dark' ? 0.2 : 0.05,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        >
+          {/* Top Section: Member + Business Info */}
+          <Box className="flex-row items-center">
+            <Avatar className="w-16 h-16">
+              <AvatarImage source={{ uri: item.owner?.profileImageUrl }} />
+              <AvatarFallbackText>{item.owner?.name.charAt(0)}</AvatarFallbackText>
+            </Avatar>
+
+            <Box className="ml-4 flex-1">
+              <Text className="text-lg font-bold" style={{ color: theme.text }} numberOfLines={1}>
+                {item.owner?.name || 'N/A'}
+              </Text>
+              <Box className="flex-row items-center mt-1">
+                {item.logoUrl ? (
+                  <Image source={{ uri: item.logoUrl }} alt="Logo" className="w-5 h-5 rounded-sm" />
+                ) : (
+                  <Briefcase size={16} color={theme.tint} />
+                )}
+                <Text className="ml-2 text-sm" style={{ color: theme.text }} numberOfLines={1}>
+                  {item.name}
+                </Text>
+              </Box>
+              <Box className="flex-row items-center mt-1">
+                <MapPin size={16} color={theme.tint} />
+                <Text className="ml-2 text-xs" style={{ color: colorScheme === "dark" ? "#AAAAAA" : "#666666" }} numberOfLines={1}>
+                  {item.address}
+                </Text>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Bottom Section: View Details Button */}
+          <Box className="mt-4 pt-3 border-t" style={{ borderColor: colorScheme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}>
+             <Box className="flex-row justify-between items-center">
+                <Text style={{ color: theme.tint, fontWeight: '600' }}>View Details</Text>
+                <ChevronRight size={20} color={theme.tint} />
+            </Box>
+          </Box>
         </Box>
-      )}
-      <Box className="flex-row items-center mt-1">
-        <Briefcase size={14} color={theme.tint} />
-        <Text className="ml-2 text-sm" style={{ color: theme.text }}>{item.category}</Text>
-      </Box>
-      <Box className="flex-row items-center mt-1">
-        <MapPin size={14} color={theme.tint} />
-        <Text className="ml-2 text-sm" style={{ color: theme.text }}>{item.address}</Text>
-      </Box>
-    </Box>
+      </TouchableOpacity>
+    </Link>
   );
 
 
   return (
-    <Box className="flex-1">
+    <Box className="flex-1" style={{ backgroundColor: theme.background }}>
       {/* Search Bar */}
       <Box className="w-full p-4">
         <Box className="relative">

@@ -13,6 +13,7 @@ export interface BusinessSearchResult {
   name: string;
   category: string;
   address: string;
+  logoUrl?: string;
   owner?: {
     _id: string;
     name: string;

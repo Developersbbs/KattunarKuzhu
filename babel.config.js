@@ -12,6 +12,11 @@ module.exports = function(api) {
 
                 alias: {
                     "@": "./",
+                    "@/components": "./components",
+                    "@/constants": "./constants",
+                    "@/hooks": "./hooks",
+                    "@/assets": "./assets",
+                    "@/services": "./services",
                     "tailwind.config": "./tailwind.config.js"
                 }
             }],
@@ -22,7 +27,8 @@ module.exports = function(api) {
                 whitelist: null,
                 safe: false,
                 allowUndefined: true
-            }]
+            }],
+            'react-native-reanimated/plugin'
         ]
     };
 };

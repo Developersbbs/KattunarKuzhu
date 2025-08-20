@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
-import { getCurrentUser } from './auth';
+import { getAuthToken } from './auth';
 
 // Use the network IP address of the development machine
 // React Native apps can't use 'localhost' as it refers to the device itself
@@ -18,14 +18,9 @@ const api = axios.create({
 // Add an interceptor to automatically add auth headers
 api.interceptors.request.use(async (config) => {
   try {
-    const firebaseUser = getCurrentUser();
+    const token = await getAuthToken();
     
-    if (firebaseUser) {
-      // Add Firebase UID to request headers
-      config.headers['firebase-uid'] = firebaseUser.uid;
-      
-      // Get the Firebase token (this will be used in future JWT implementation)
-      const token = await firebaseUser.getIdToken();
+    if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     

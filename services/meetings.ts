@@ -337,3 +337,13 @@ export const getMeetingById = async (id: string) => {
     throw error;
   }
 };
+
+export const markAttendance = async (meetingId: string, location: { latitude: number; longitude: number; }) => {
+  try {
+    const response = await api.post(`/meetings/${meetingId}/attendance`, location);
+    return response.data;
+  } catch (error) {
+    console.error(`Error marking attendance for meeting ${meetingId}:`, error);
+    throw error;
+  }
+};

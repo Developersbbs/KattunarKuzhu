@@ -10,7 +10,7 @@ import { TouchableOpacity } from "react-native";
 // Define meeting types
 export type MeetingType = "general" | "special" | "training";
 export type MeetingStatus = "current" | "upcoming" | "past";
-export type AttendanceStatus = "present" | "absent" | "pending";
+export type AttendanceStatus = "early" | "on_time" | "late";
 
 // Meeting interface
 export interface Meeting {
@@ -22,7 +22,10 @@ export interface Meeting {
   time: string;
   location: string;
   attendees?: number;
-  attendanceStatus?: AttendanceStatus;
+  attendance?: {
+    status: AttendanceStatus;
+    timestamp: string;
+  };
   description?: string;
 }
 
@@ -97,12 +100,13 @@ const MeetingCard: React.FC<MeetingCardProps> = ({
   
   // Get attendance status color
   const getAttendanceStatusColor = () => {
-    switch (meeting.attendanceStatus) {
-      case "present":
+    switch (meeting.attendance?.status) {
+      case "early":
         return colorScheme === "dark" ? "#4CAF50" : "#2E7D32";
-      case "absent":
+      case "on_time":
+        return colorScheme === "dark" ? "#2196F3" : "#0D47A1";
+      case "late":
         return colorScheme === "dark" ? "#F44336" : "#C62828";
-      case "pending":
       default:
         return colorScheme === "dark" ? "#FFC107" : "#F57C00";
     }
@@ -124,12 +128,13 @@ const MeetingCard: React.FC<MeetingCardProps> = ({
   
   // Get attendance status icon
   const getAttendanceStatusIcon = () => {
-    switch (meeting.attendanceStatus) {
-      case "present":
+    switch (meeting.attendance?.status) {
+      case "early":
         return <CheckCircle size={16} color={getAttendanceStatusColor()} />;
-      case "absent":
+      case "on_time":
+        return <CheckCircle size={16} color={getAttendanceStatusColor()} />;
+      case "late":
         return <AlertCircle size={16} color={getAttendanceStatusColor()} />;
-      case "pending":
       default:
         return <Clock size={16} color={getAttendanceStatusColor()} />;
     }
@@ -177,15 +182,15 @@ const MeetingCard: React.FC<MeetingCardProps> = ({
               </Box>
             )}
             
-            {meeting.attendanceStatus && meeting.status === "past" && (
+            {meeting.attendance && (
               <Box className="flex-row items-center">
                 {getAttendanceStatusIcon()}
                 <Text
                   className="text-xs font-medium ml-1"
                   style={{ color: getAttendanceStatusColor() }}
                 >
-                  {meeting.attendanceStatus === "present" ? "Present" : 
-                   meeting.attendanceStatus === "absent" ? "Absent" : "Pending"}
+                  {meeting.attendance.status === "early" ? "Early" :
+                   meeting.attendance.status === "on_time" ? "On-time" : "Late"}
                 </Text>
               </Box>
             )}
@@ -256,7 +261,7 @@ const MeetingCard: React.FC<MeetingCardProps> = ({
           )}
           
           {/* Mark Attendance Button for current meetings */}
-          {meeting.status === "current" && onMarkAttendance && (
+          {meeting.status === "current" && !meeting.attendance && onMarkAttendance && (
             <Button
               className="mt-4 h-10 rounded-lg"
               style={{ backgroundColor: colorScheme === "dark" ? "#A076F9" : "#2D1248" }}

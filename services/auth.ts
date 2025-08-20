@@ -8,8 +8,20 @@ import {
   Auth,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import * as SecureStore from 'expo-secure-store';
+
+const AUTH_TOKEN_KEY = 'authToken';
 
 const typedAuth = auth as Auth;
+
+export const getAuthToken = async (): Promise<string | null> => {
+  try {
+    return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+  } catch (error) {
+    console.error('Error getting auth token:', error);
+    return null;
+  }
+};
 
 export const checkUserStatus = async (phoneNumber: string): Promise<{ isApproved: boolean; message: string }> => {
   // Log the URL for debugging purposes
@@ -74,6 +86,11 @@ export const confirmVerificationCode = async (
     
     // Always sign in, which creates the account if it doesn't exist
     await signInWithCredential(typedAuth, credential);
+    const user = typedAuth.currentUser;
+    if (user) {
+      const response = await api.post('/auth/login', { firebaseUid: user.uid });
+      await SecureStore.setItemAsync(AUTH_TOKEN_KEY, response.data.accessToken);
+    }
     return { success: true };
   } catch (error: any)
   {
@@ -87,6 +104,7 @@ export const confirmVerificationCode = async (
 
 export const logOut = async (): Promise<boolean> => {
   try {
+    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
     await signOut(typedAuth);
     return true;
   } catch (error) {

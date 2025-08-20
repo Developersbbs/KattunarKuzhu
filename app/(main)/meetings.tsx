@@ -8,7 +8,8 @@ import { TouchableOpacity, ScrollView, Dimensions, View, Alert, Modal, ActivityI
 import MeetingCard, { Meeting, MeetingType, MeetingStatus } from "@/components/MeetingCard";
 import { useRouter } from "expo-router";
 import { Button, ButtonText } from "@/components/ui/button";
-import { fetchMeetings } from "@/services/meetings";
+import { fetchMeetings, markAttendance } from "@/services/meetings";
+import * as Location from 'expo-location';
 
 const { width } = Dimensions.get("window");
 
@@ -66,6 +67,7 @@ export default function MeetingsScreen() {
   const [rescheduleOneOnOneId, setRescheduleOneOnOneId] = useState<string | null>(null);
   const [showRescheduleDatePicker, setShowRescheduleDatePicker] = useState(false);
   const [currentRescheduleMonth, setCurrentRescheduleMonth] = useState(new Date());
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
   
   // Load meetings from API
   const loadMeetings = async () => {
@@ -86,7 +88,15 @@ export default function MeetingsScreen() {
 
   // Load meetings on component mount
   useEffect(() => {
-    loadMeetings();
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        setLocationPermissionGranted(true);
+      } else {
+        Alert.alert('Permission to access location was denied');
+      }
+      loadMeetings();
+    })();
   }, []);
 
   // Generate calendar dates for current month view
@@ -259,13 +269,23 @@ export default function MeetingsScreen() {
   };
   
   // Handle mark attendance
-  const handleMarkAttendance = (meetingId: string) => {
-    console.log("Mark attendance for meeting:", meetingId);
-    // Navigate to attendance marking screen
-    router.push({
-      pathname: "/mark-attendance",
-      params: { meetingId }
-    });
+  const handleMarkAttendance = async (meetingId: string) => {
+    if (!locationPermissionGranted) {
+      Alert.alert('Location permission is required to mark attendance.');
+      return;
+    }
+    try {
+      let location = await Location.getCurrentPositionAsync({});
+      await markAttendance(meetingId, {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      Alert.alert('Success', 'Attendance marked successfully');
+      loadMeetings();
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      Alert.alert('Error', 'Failed to mark attendance. Please try again.');
+    }
   };
 
   // Open reschedule modal

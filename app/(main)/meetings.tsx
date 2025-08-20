@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { Button, ButtonText } from "@/components/ui/button";
 import { fetchMeetings, markAttendance } from "@/services/meetings";
 import * as Location from 'expo-location';
+import AttendanceModal from '@/components/AttendanceModal';
 
 const { width } = Dimensions.get("window");
 
@@ -68,6 +69,9 @@ export default function MeetingsScreen() {
   const [showRescheduleDatePicker, setShowRescheduleDatePicker] = useState(false);
   const [currentRescheduleMonth, setCurrentRescheduleMonth] = useState(new Date());
   const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
+  const [isAttendanceModalVisible, setIsAttendanceModalVisible] = useState(false);
+  const [selectedMeetingForAttendance, setSelectedMeetingForAttendance] = useState<Meeting | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   
   // Load meetings from API
   const loadMeetings = async () => {
@@ -269,24 +273,57 @@ export default function MeetingsScreen() {
   };
   
   // Handle mark attendance
-  const handleMarkAttendance = async (meetingId: string) => {
+  const handleMarkAttendance = async (meeting: Meeting) => {
     if (!locationPermissionGranted) {
       Alert.alert('Location permission is required to mark attendance.');
       return;
     }
     try {
       let location = await Location.getCurrentPositionAsync({});
-      await markAttendance(meetingId, {
+      setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
+      setSelectedMeetingForAttendance(meeting);
+      setIsAttendanceModalVisible(true);
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Failed to get your location. Please try again.');
+    }
+  };
+
+  const confirmAttendance = async () => {
+    if (!selectedMeetingForAttendance || !userLocation) {
+      return;
+    }
+    try {
+      await markAttendance(selectedMeetingForAttendance.id, userLocation);
       Alert.alert('Success', 'Attendance marked successfully');
+      setIsAttendanceModalVisible(false);
       loadMeetings();
     } catch (error) {
       console.error('Error marking attendance:', error);
       Alert.alert('Error', 'Failed to mark attendance. Please try again.');
     }
   };
+
+  const getDistance = (loc1: { latitude: number; longitude: number; }, loc2: { latitude: number; longitude: number; }): number => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(loc2.latitude - loc1.latitude);
+    const dLon = deg2rad(loc2.longitude - loc1.longitude);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(loc1.latitude)) * Math.cos(deg2rad(loc2.latitude)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+      ;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    return d;
+  }
+
+  const deg2rad = (deg: number): number => {
+    return deg * (Math.PI / 180)
+  }
 
   // Open reschedule modal
   const openRescheduleModal = (oneOnOneId: string) => {
@@ -550,7 +587,7 @@ export default function MeetingsScreen() {
                 key={meeting.id}
                 meeting={meeting}
                 onPress={() => console.log("Meeting pressed:", meeting.id)}
-                onMarkAttendance={() => handleMarkAttendance(meeting.id)}
+                onMarkAttendance={() => handleMarkAttendance(meeting)}
               />
             ))
           ) : (
@@ -622,7 +659,7 @@ export default function MeetingsScreen() {
                 key={meeting.id}
                 meeting={meeting}
                 onPress={() => console.log("Meeting pressed:", meeting.id)}
-                onMarkAttendance={() => handleMarkAttendance(meeting.id)}
+                onMarkAttendance={() => handleMarkAttendance(meeting)}
               />
             ))
           ) : (
@@ -1493,6 +1530,16 @@ export default function MeetingsScreen() {
           </Box>
         </Box>
       </Modal>
+    {selectedMeetingForAttendance && userLocation && (
+      <AttendanceModal
+        isOpen={isAttendanceModalVisible}
+        onClose={() => setIsAttendanceModalVisible(false)}
+        onConfirm={confirmAttendance}
+        meetingLocation={{ latitude: 13.0827, longitude: 80.2707 }} // Placeholder
+        userLocation={userLocation}
+        distance={getDistance(userLocation, { latitude: 13.0827, longitude: 80.2707 })}
+      />
+    )}
     </Box>
   );
-} 
+}

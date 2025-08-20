@@ -191,6 +191,8 @@ const MeetingCard: React.FC<MeetingCardProps> = ({
                 >
                   {meeting.attendance.status === "early" ? "Early" :
                    meeting.attendance.status === "on_time" ? "On-time" : "Late"}
+                  {' at '}
+                  {new Date(meeting.attendance.timestamp).toLocaleTimeString()}
                 </Text>
               </Box>
             )}

@@ -879,7 +879,7 @@ export default function MeetingsScreen() {
       switch (oneOnOne.status) {
         case "pending_sent":
           return (
-            <Box className="flex-row justify-end mt-3 space-x-2 gap-4">
+            <Box className="flex-row justify-end mt-3 gap-4">
               <TouchableOpacity
                 className="px-4 py-2 rounded-lg"
                 style={{
@@ -915,7 +915,7 @@ export default function MeetingsScreen() {
           );
         case "pending_received":
           return (
-            <Box className="flex-row justify-end mt-3 space-x-2 gap-4">
+            <Box className="flex-row justify-end mt-3 gap-4">
               <TouchableOpacity
                 className="px-4 py-2 rounded-lg"
                 style={{

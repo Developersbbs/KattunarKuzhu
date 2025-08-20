@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getUserProfile, getCachedProfile, setCachedProfile } from "@/services/user";
 import { useToast, Toast, ToastTitle } from "@/components/ui/toast";
 import { router } from "expo-router";
+import { UserProfile } from "@/constants/types";
 
 // Define the NotificationType
 type NotificationType = 'info' | 'success' | 'warning' | 'meeting';

@@ -4,7 +4,7 @@ import { getCurrentUser } from './auth';
 
 // Use the network IP address of the development machine
 // React Native apps can't use 'localhost' as it refers to the device itself
-const API_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://192.168.43.108:3000';
+const API_URL = Constants.expoConfig?.extra?.API_BASE_URL || 'http://192.168.1.41:3000';
 
 const api = axios.create({
   baseURL: API_URL, // Override with hardcoded value
